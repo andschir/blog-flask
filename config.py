@@ -44,7 +44,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     # workaround for missing SQLAlchemy dialect: postgres:// > postgresql://
     database_path = os.environ.get('DATABASE_URL')
-    if database_path.startswith('postgres://'):
+    if database_path and database_path.startswith('postgres://'):
         database_path = database_path.replace('postgres://', 'postgresql://', 1)
 
     SQLALCHEMY_DATABASE_URI = database_path or \
