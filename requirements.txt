@@ -1,1 +1,1 @@
--r heroku.txt
+-r requirements/heroku.txt
