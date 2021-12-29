@@ -1,0 +1,23 @@
+{% extends "base.html" %}/home/demino/WebProjects/flask
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Create post{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    {% if current_user.can(Permission.WRITE) %}
+    <h1>Create new wonderfull Post!</h1>
+    {% else %}
+    <h1>You don't have permission to write so far :(</h1>
+    {% endif %}
+</div>
+
+<div>
+    {% if current_user.can(Permission.WRITE) %}
+	    {{ wtf.quick_form(form) }}
+        {{ ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js') ) }}
+        {% include '_cke_config.html' %}
+    {% endif %}
+</div>
+{% endblock %}
+
