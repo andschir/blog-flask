@@ -42,7 +42,12 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+    # workaround for missing SQLAlchemy dialect: postgres:// > postgresql://
+    database_path = os.environ.get('DATABASE_URL')
+    if database_path.startswith('postgres://'):
+        database_path = database_path.replace('postgres://', 'postgresql://', 1)
+
+    SQLALCHEMY_DATABASE_URI = database_path or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 
     @classmethod
@@ -72,7 +77,7 @@ class HerokuConfig(ProductionConfig):
     SSL_REDIRECT = True if os.environ.get('DYNO') else False
 
     @classmethod
-    def init_app(cls,app):
+    def init_app(cls, app):
         ProductionConfig.init_app(app)
 
         # log to stderr
