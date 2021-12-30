@@ -16,6 +16,12 @@ class Permission:
     MODERATE = 8
     ADMIN = 16
 
+    def get_attr(self):
+        return {name: attr for name, attr in self.__dict__.items()
+                if not name.startswith("__")
+                and not callable(attr)
+                and not type(attr) is staticmethod}
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
