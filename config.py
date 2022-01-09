@@ -20,7 +20,7 @@ class Config:
 
     UPLOADED_PATH = os.path.join(basedir, 'uploads')
     CKEDITOR_FILE_UPLOADER = 'main.upload'
-    CKEDITOR_EXTRA_PLUGINS = ['youtube']
+    # CKEDITOR_EXTRA_PLUGINS = ['youtube']
     
     SSL_REDIRECT = False
     

@@ -280,21 +280,39 @@ class Post(db.Model):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
                         'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
                         'h1', 'h2', 'h3', 'p',
-                        'img', 'table', 'div','iframe']
+                        'img', 'table', 'div', 'iframe',
+                        'figure', 'oembed']
         allowed_styles = [
             'color', 'background-color', 'font', 'font-weight',
             'height', 'max-height', 'min-height',
             'width', 'max-width', 'min-width',
-            'text-align']
+            'text-align',
+            'position', 'padding-bottom', 'height', 'width', 'top', 'left',
+            ]
         allowed_attrs = {
             '*': ['class', 'title', 'style'],
             'a': ['href', 'rel', 'id', 'name'],
             'img': ['alt', 'src', 'width', 'height', 'align', 'style'],
-            'iframe': ['frameborder', 'scrolling', 'src', 'height', 'width'],
+            'iframe': ['allowfullscreen', 'allow', 'frameborder', 'scrolling', 'src', 'height', 'width'],
+            'figure': ['class'],
+            'oembed': ['url'],
+            'div': ['data-oembed-url'],
         }
-        target.body_html = bleach.linkify(bleach.clean(
-            value, tags=allowed_tags, attributes=allowed_attrs,
-            styles=allowed_styles, strip=True))
+        from functools import partial
+        from bleach.sanitizer import Cleaner
+        from bleach.linkifier import LinkifyFilter
+
+        cleaner = Cleaner(
+            tags = allowed_tags,
+            attributes=allowed_attrs,
+            styles=allowed_styles,
+            filters = [partial(LinkifyFilter, skip_tags=['url'])])
+
+        target.body_html = cleaner.clean(value)
+
+        # target.body_html = bleach.linkify(bleach.clean(
+        #     value, tags=allowed_tags, attributes=allowed_attrs,
+        #     styles=allowed_styles, strip=True))
 
 db.event.listen(Post.body, 'set', Post.on_changed_body)
 

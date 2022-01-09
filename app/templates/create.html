@@ -3,6 +3,11 @@
 
 {% block title %}Create post{% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <script src="static/ckeditor/build/ckeditor.js"></script>
+{% endblock %}
+
 {% block page_content %}
 <div class="page-header">
     {% if current_user.can(Permission.WRITE) %}
@@ -14,9 +19,27 @@
 
 <div>
     {% if current_user.can(Permission.WRITE) %}
-	    {{ wtf.quick_form(form) }}
-        {{ ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js') ) }}
-        {% include '_cke_config.html' %}
+
+    {{ wtf.quick_form(form) }}
+    <script>
+        ClassicEditor
+            .create( document.querySelector( '#title' ) )
+            .catch( error => {
+                console.error( error );
+            } );
+    </script>
+    <script>
+        ClassicEditor
+            .create( document.querySelector( '#body' ), {
+                mediaEmbed: {previewsInData: true}
+            } )
+            .catch( error => {
+                console.error( error );
+            } );
+    </script>
+
+
+
     {% endif %}
 </div>
 {% endblock %}

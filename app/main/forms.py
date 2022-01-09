@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
-from flask_ckeditor import CKEditorField
-from wtforms import StringField, TextAreaField, BooleanField, SelectField,\
-    SubmitField
+# from flask_ckeditor import CKEditorField
+from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
 from flask_pagedown.fields import PageDownField
@@ -52,9 +51,25 @@ class EditProfileAdminForm(FlaskForm):
             raise ValidationError('Username already in use.')
 
 
+from wtforms import TextAreaField
+from wtforms.widgets import TextArea
+
+
+class CKEditor(TextArea):
+    def __call__(self, field, **kwargs):
+        c = kwargs.pop('class', '') or kwargs.pop('class_', '')
+        kwargs['class'] = u'%s %s' % ('ckeditor', c)
+        return super(CKEditor, self).__call__(field, **kwargs)
+
+
+class CKEditorField(TextAreaField):
+    widget = CKEditor()
+
+
 class PostForm(FlaskForm):
     title = CKEditorField('Title')
-    body = CKEditorField('Body')
+    # body = CKEditorField('Body')
+    body = TextAreaField('Body')
     submit = SubmitField('Submit')
 
 

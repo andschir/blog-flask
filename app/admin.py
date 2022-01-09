@@ -10,6 +10,9 @@ from .models import Permission, Role, User
 
 
 class IndexView(AdminIndexView):
+    def is_visible(self):
+        return False
+
     @expose('/')
     def index(self):
         if not (current_user.is_authenticated and current_user.is_administrator):
@@ -17,7 +20,7 @@ class IndexView(AdminIndexView):
         return self.render('/admin/index.html')
 
 
-app_admin = Admin(index_view=IndexView(name='Admin Dashboard'))
+app_admin = Admin(name='Admin dashboard', index_view=IndexView())
 
 
 def add_admin_views():
