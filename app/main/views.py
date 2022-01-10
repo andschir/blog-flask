@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, abort, flash, request,\
-    current_app, make_response
+    current_app, make_response, jsonify
 from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
@@ -281,4 +281,4 @@ def upload():
         return upload_fail(message='Image only!')
     f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
     url = url_for('main.uploaded_files', filename=f.filename)
-    return upload_success(url, filename=f.filename)
+    return jsonify(url=url)

@@ -31,10 +31,14 @@
     <script>
         ClassicEditor
             .create( document.querySelector( '#body' ), {
+                extraPlugins: ['SimpleUploadAdapter'],
+                simpleUpload: {
+                    uploadUrl: '/upload',
+                },
                 mediaEmbed: {previewsInData: true}
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error.stack );
             } );
     </script>
 
