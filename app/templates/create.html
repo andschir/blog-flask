@@ -5,7 +5,9 @@
 
 {% block head %}
     {{ super() }}
-    <script src="static/ckeditor/build/ckeditor.js"></script>
+<!--    <script src="static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
+    <script src="static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
+
 {% endblock %}
 
 {% block page_content %}
@@ -37,12 +39,16 @@
                 },
                 mediaEmbed: {previewsInData: true}
             } )
+            .then( editor => {
+                const wordCountPlugin = editor.plugins.get( 'WordCount' );
+                const wordCountWrapper = document.getElementById( 'word-count' );
+
+                wordCountWrapper.appendChild( wordCountPlugin.wordCountContainer );
+            } )
             .catch( error => {
                 console.error( error.stack );
             } );
     </script>
-
-
 
     {% endif %}
 </div>
