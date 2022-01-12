@@ -39,12 +39,6 @@
                 },
                 mediaEmbed: {previewsInData: true}
             } )
-            .then( editor => {
-                const wordCountPlugin = editor.plugins.get( 'WordCount' );
-                const wordCountWrapper = document.getElementById( 'word-count' );
-
-                wordCountWrapper.appendChild( wordCountPlugin.wordCountContainer );
-            } )
             .catch( error => {
                 console.error( error.stack );
             } );
