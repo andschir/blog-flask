@@ -144,7 +144,3 @@ input[type=search] {
 input[type=search]:focus {
   width: 100%;
 }
-img[style] {
-    width: 100% !important;
-    height: auto !important;
-}

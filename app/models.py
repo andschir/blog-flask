@@ -279,15 +279,18 @@ class Post(db.Model):
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
                         'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
-                        'h1', 'h2', 'h3', 'p',
+                        'h1', 'h2', 'h3', 'h4', 'p',
                         'img', 'table', 'div', 'iframe',
-                        'figure', 'oembed']
+                        'figure',
+                        'figcaption', 'tbody', 'tr', 'td', 'span', 'hr',
+                        'br', 'label', 'input']
         allowed_styles = [
             'color', 'background-color', 'font', 'font-weight',
             'height', 'max-height', 'min-height',
             'width', 'max-width', 'min-width',
             'text-align',
             'position', 'padding-bottom', 'height', 'width', 'top', 'left',
+            'font-family',
             ]
         allowed_attrs = {
             '*': ['class', 'title', 'style'],
@@ -295,8 +298,10 @@ class Post(db.Model):
             'img': ['alt', 'src', 'width', 'height', 'align', 'style'],
             'iframe': ['allowfullscreen', 'allow', 'frameborder', 'scrolling', 'src', 'height', 'width'],
             'figure': ['class'],
-            'oembed': ['url'],
             'div': ['data-oembed-url'],
+            'span': ['class'],
+            'input': ['type', 'disabled', 'checked'],
+            'td': ['colspan'],
         }
         from functools import partial
         from bleach.sanitizer import Cleaner
