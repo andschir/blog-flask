@@ -3,13 +3,18 @@
 
 {% block title %}Flasky - Edit Post{% endblock %}
 
+{% block head %}
+    {{ super() }}
+<!--    <script src="static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
+    <script src="/static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
+{% endblock %}
+
 {% block page_content %}
 <div class="page-header">
     <h1>Edit Post</h1>
 </div>
 <div>
     {{ wtf.quick_form(form) }}
-    {{ ckeditor.load(custom_url=url_for('static', filename='ckeditor/ckeditor.js') ) }}
     {% include '_cke_config.html' %}
 </div>
 {% endblock %}

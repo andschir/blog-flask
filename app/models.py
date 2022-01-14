@@ -274,7 +274,7 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-# https://www.youtube.com/watch?v=15qOfuiEryY
+
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
@@ -308,10 +308,10 @@ class Post(db.Model):
         from bleach.linkifier import LinkifyFilter
 
         cleaner = Cleaner(
-            tags = allowed_tags,
+            tags=allowed_tags,
             attributes=allowed_attrs,
             styles=allowed_styles,
-            filters = [partial(LinkifyFilter, skip_tags=['url'])])
+            filters=[partial(LinkifyFilter, skip_tags=['url'])])
 
         target.body_html = cleaner.clean(value)
 

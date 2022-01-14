@@ -45,6 +45,6 @@ def create_app(config_name):
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     from app.admin import add_admin_views
-    add_admin_views()
+    add_admin_views(app)
 
     return app

@@ -18,10 +18,11 @@ class Config:
     FLASKY_FOLLOWERS_PER_PAGE = 50
     FLASKY_COMMENTS_PER_PAGE = 30
 
+    STATIC_DIR = os.path.join(basedir, 'app/static')
+    UPLOADS_DIR = os.path.join(basedir, 'uploads')
+
     UPLOADED_PATH = os.path.join(basedir, 'uploads')
-    CKEDITOR_FILE_UPLOADER = 'main.upload'
-    # CKEDITOR_EXTRA_PLUGINS = ['youtube']
-    
+
     SSL_REDIRECT = False
     
     @staticmethod

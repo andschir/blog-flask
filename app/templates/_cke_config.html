@@ -1,42 +1,38 @@
-{{ ckeditor.config(name='title',
-            custom_config="
-                width: '100%',
-                height: 100,
-                removePlugins: 'elementspath',
-                resize_enabled: false,
-                toolbar: [
-                    { name: 'tools', items: [ 'ShowBlocks' ] },
-                    { name: 'document', items: ['Preview'] },
-                    { name: 'source', items: [ 'Source' ] },
-                    { name: 'clipboard', items: [ 'Cut', 'Copy', '-', 'Undo', 'Redo' ] },
-                    { name: 'links', items: [ 'Smiley', 'SpecialChar'] },
-                    { name: 'styles', items: [ 'Styles', 'Format'] },
-                    { name: 'paragraph', items: [ 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
-                    '/',
-                    { name: 'basicstyles', items: [ 'Font', 'FontSize', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat', '-', 'TextColor', 'BGColor' ] },
-                    ]
-                "
-            ) }}
-        {{ ckeditor.config(name='body',
-            custom_config="
-                width: '100%',
-                height: '18em',
-                toolbar: [
-                    { name: 'tools', items: [ 'Maximize', 'ShowBlocks' ] },
-                    { name: 'source', items: [ 'Source' ] },
-                    { name: 'clipboard', items: [ 'Cut', 'Copy', '-', 'Undo', 'Redo' ] },
-                    { name: 'editing', items: [ 'Find', 'Replace', '-', 'SelectAll'] },
-                    { name: 'about', items: [ 'About' ] },
-                    '/',
-                    { name: 'document', items: ['Preview', 'ExportPdf'] },
-                    { name: 'links', items: [ 'Link', 'Unlink', 'Anchor'] },
-                    { name: 'insert', items: [ 'Image', 'Youtube', '-', 'Iframe', 'Table'] },
-                    { name: 'symbols', items: ['HorizontalRule', 'Smiley', 'SpecialChar'] },
-                    '/',
-                    { name: 'styles', items: [ 'Styles', 'Format'] },
-                    { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'] },
-                    '/',
-                    { name: 'basicstyles', items: [ 'Font', 'FontSize', 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'CopyFormatting', 'RemoveFormat', '-', 'TextColor', 'BGColor' ] },
-                    ]
-                "
-            ) }}
+<script>
+        ClassicEditor
+            .create( document.querySelector( '#title' ), {
+                toolbar: {
+                    items: [
+                        '|', 'sourceEditing',
+                        '|', 'undo', 'redo',
+                        '|', 'removeFormat',
+                        '|', 'alignment',
+                        '|', 'outdent', 'indent',
+                        '|', 'link',
+                        '|', 'specialCharacters',
+                            '-',
+                        'fontFamily', 'fontSize',
+                        '|', 'bold', 'italic', 'underline', 'strikethrough', 'subscript',
+                            'superscript',
+                        '|', 'fontColor', 'fontBackgroundColor', 'highlight',
+                    ],
+                    shouldNotGroupWhenFull: true
+                }
+            } )
+            .catch( error => {
+                console.error( error );
+            } );
+    </script>
+    <script>
+        ClassicEditor
+            .create( document.querySelector( '#body' ), {
+                extraPlugins: ['SimpleUploadAdapter'],
+                simpleUpload: {
+                    uploadUrl: '/upload',
+                },
+                mediaEmbed: {previewsInData: true}
+            } )
+            .catch( error => {
+                console.error( error.stack );
+            } );
+    </script>
