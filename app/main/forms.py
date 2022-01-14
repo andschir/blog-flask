@@ -3,8 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
-from flask_pagedown.fields import PageDownField
-from ..models import Role, User
+from ..models import Role, User, Post
 
 
 class NameForm(FlaskForm):
@@ -67,10 +66,16 @@ class CKEditorField(TextAreaField):
 
 
 class PostForm(FlaskForm):
-    title = CKEditorField('Title')
-    # body = CKEditorField('Body')
-    body = TextAreaField('Body')
-    submit = SubmitField('Submit')
+    title = CKEditorField('Заголовок')
+    body = TextAreaField('Текст')
+    submit = SubmitField('Создать')
+    status = SelectField(
+        choices=(
+            (Post.STATUS_PUBLIC, 'Опубликовать'),
+            (Post.STATUS_DRAFT, 'Сохранить как черновик')
+        ),
+        coerce=int
+    )
 
 
 class CommentForm(FlaskForm):

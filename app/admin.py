@@ -9,10 +9,12 @@ from datetime import date
 
 from flask_login import current_user
 
-from wtforms.fields import PasswordField
+from wtforms.fields import PasswordField, SelectField
 
 from app import db
 from .models import Permission, Role, User, Post
+
+import warnings
 
 
 class RestrictedAccess(object):
@@ -148,21 +150,30 @@ def add_admin_views(app_instance):
             if name == 'body':
                 return Markup(model.body)[:200]
 
+        _status_choices = [(choice, label) for choice, label in [
+            (Post.STATUS_PUBLIC, 'Public'),
+            (Post.STATUS_DRAFT, 'Draft'),
+            (Post.STATUS_DELETED, 'Deleted'),
+        ]]
+
+        column_choices = {
+            'status': _status_choices,
+        }
         can_create = False
 
         column_type_formatters = MY_DEFAULT_FORMATTERS
 
         column_list = [
-            'id', 'timestamp', 'author.username', 'title', 'body'
+            'id', 'status', 'timestamp', 'author.username', 'title', 'body'
         ]
         column_filters = (
-            'id', 'timestamp', 'author.username', 'title', 'body'
+            'id', 'status', 'timestamp', 'author.username', 'title', 'body'
         )
         column_searchable_list = (
             'title', 'body'
         )
         column_sortable_list = (
-            'id', 'timestamp', 'author.username', 'title', 'body'
+            'id', 'status', 'timestamp', 'author.username', 'title', 'body'
         )
         column_default_sort = ('id', True)
         column_labels = {
@@ -178,8 +189,15 @@ def add_admin_views(app_instance):
             'body': _html_formatter
         }
         form_columns = [
-            'comments', 'timestamp', 'author'
+            'comments', 'status', 'timestamp', 'author'
         ]
+        form_overrides = {'status': SelectField}
+        form_args = {
+            'status': {
+                'choices': _status_choices,
+                'coerce': int
+            }
+        }
         form_widget_args = {
             'timestamp': {
                 'disabled': True
@@ -200,7 +218,9 @@ def add_admin_views(app_instance):
         pass
 
     app_admin.add_view(RoleModelView(Role, db.session, name='Роли'))
-    app_admin.add_view(UserModelView(User, db.session, name='Пользователи'))
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', 'Fields missing from ruleset', UserWarning)
+        app_admin.add_view(UserModelView(User, db.session, name='Пользователи'))
     app_admin.add_view(PostModelView(Post, db.session, name='Записи'))
     app_admin.add_view(StaticFileAdmin(
         app_instance.config['STATIC_DIR'], '/static/', name='Cтатические файлы'))

@@ -266,8 +266,13 @@ def load_user(user_id):
 
 
 class Post(db.Model):
+    STATUS_PUBLIC = 0
+    STATUS_DRAFT = 1
+    STATUS_DELETED = 2
+
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.SmallInteger, default=STATUS_PUBLIC)
     title = db.Column(db.String(100))
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
