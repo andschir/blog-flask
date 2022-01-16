@@ -12,19 +12,30 @@
 {% block page_content %}
 <div class="page-header">
     {% if current_user.can(Permission.WRITE) %}
-    <h1>Create new wonderfull Post!</h1>
+    <h2>Новая запись</h2>
     {% else %}
-    <h1>You don't have permission to write so far :(</h1>
+    <h1>Read-only: У вас нет разрешения создавать записи</h1>
     {% endif %}
 </div>
 
-<div>
-    {% if current_user.can(Permission.WRITE) %}
-
-    {{ wtf.quick_form(form) }}
+<form action="{{ url_for('main.create') }}" class="form form-group form-horizontal text-center" method="POST">
+{{ form.csrf_token }}
+    <div class="row ">
+        <h3>{{ form.title.label(class='control-label') }}</h3>
+        {{ form.title }}
+    </div>
+    <div class="row ">
+        <h3>{{ form.body.label(class='control-label') }}</h3>
+        {{ form.body }}
+    </div>
     {% include '_cke_config.html' %}
-
-    {% endif %}
-</div>
+    <div class="row">
+        <div class="form-group">
+            <h3>{{ form.status.label(class='control-label') }}</h3>
+            {{ form.status }}
+        </div>
+        <button type="submit" class="btn btn-primary">Создать</button>
+        <a class="btn btn-danger" type="button" href="{{ url_for('main.index') }}">Отмена</a>
+    </div>
+</form>
 {% endblock %}
-
