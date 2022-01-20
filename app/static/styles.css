@@ -54,7 +54,9 @@ div.post-content {
     min-height: 48px;
 }
 div.post-footer {
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }
 ul.comments {
     list-style-type: none;
@@ -143,4 +145,27 @@ input[type=search] {
 }
 input[type=search]:focus {
   width: 100%;
+}
+.post-button:hover {
+    background-color: #808080 !important;
+    color: #FFFFFF !important;
+    background-image: none !important;
+    text-decoration: underline;
+}
+a:link { text-decoration: none; }
+a:visited { text-decoration: none; }
+a:hover { text-decoration: none; }
+a:active { text-decoration: none; }
+
+.post-body-sizer {
+  -moz-transition: height .5s;
+  -ms-transition: height .5s;
+  -o-transition: height .5s;
+  -webkit-transition: height .5s;
+  transition: height .5s;
+
+  overflow: hidden;
+  line-height: 1em;
+
+  height: 5em;
 }

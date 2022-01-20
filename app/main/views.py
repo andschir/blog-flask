@@ -21,7 +21,7 @@ def index():
     if show_followed:
         query = current_user.followed_posts
     else:
-        query = Post.query
+        query = Post.query.filter_by(status=Post.STATUS_PUBLIC)
     pagination = query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
         error_out=False)
@@ -36,7 +36,8 @@ def create():
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
         post = Post(title=form.title.data,
                     body=form.body.data,
-                    author=current_user._get_current_object())
+                    author=current_user._get_current_object(),
+                    status=form.status.data)
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('.index'))
@@ -64,7 +65,7 @@ def edit_profile():
         current_user.about_me = form.about_me.data
         db.session.add(current_user._get_current_object())
         db.session.commit()
-        flash('Your profile has been updated.')
+        flash('Ваш профиль успешно обновлен')
         return redirect(url_for('.user', username=current_user.username))
     form.name.data = current_user.name
     form.location.data = current_user.location
@@ -88,7 +89,7 @@ def edit_profile_admin(id):
         user.about_me = form.about_me.data
         db.session.add(user)
         db.session.commit()
-        flash('The profile has been updated.')
+        flash('Профиль пользователя успешно обновлен')
         return redirect(url_for('.user', username=user.username))
     form.email.data = user.email
     form.username.data = user.username
@@ -110,7 +111,7 @@ def post(id):
                           author=current_user._get_current_object())
         db.session.add(comment)
         db.session.commit()
-        flash('Your comment has been published.')
+        flash('Ваш комментарий успешно опубликован')
         return redirect(url_for('.post', id=post.id, page=-1))
     page = request.args.get('page', 1, type=int)
     if page == -1:
@@ -135,13 +136,61 @@ def edit(id):
     if form.validate_on_submit():
         post.title = form.title.data
         post.body = form.body.data
+        post.status = form.status.data
         db.session.add(post)
         db.session.commit()
-        flash('The post has been updated.')
+        flash('Запись успешно отредактирована')
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title
     form.body.data = post.body
-    return render_template('edit_post.html', form=form)
+    form.status.data = post.status
+    return render_template('edit_post.html', post=post, form=form)
+
+
+@main.route('/delete/<int:id>', methods=['POST'])
+@login_required
+def delete(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_DELETED
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно удалена')
+        return redirect(url_for('.index'))
+
+
+@main.route('/recover/<int:id>', methods=['POST'])
+@login_required
+def recover(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_DRAFT
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно восстановлена')
+        return redirect(url_for('.index'))
+
+
+@main.route('/publish/<int:id>', methods=['POST'])
+@login_required
+def publish(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_PUBLIC
+        post.refresh_timestamp()
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно опубликована')
+        return redirect(url_for('.index'))
 
 
 @main.route('/follow/<username>')
@@ -150,14 +199,14 @@ def edit(id):
 def follow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Invalid user.')
+        flash('Несуществующий пользователь')
         return redirect(url_for('.index'))
     if current_user.is_following(user):
-        flash('You are already following this user.')
+        flash('Вы уже подписаны на этого пользователя!')
         return redirect(url_for('.user', username=username))
     current_user.follow(user)
     db.session.commit()
-    flash('You are now following %s.' % username)
+    flash('Вы теперь подписаны на %s' % username)
     return redirect(url_for('.user', username=username))
 
 
@@ -167,14 +216,14 @@ def follow(username):
 def unfollow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Invalid user.')
+        flash('Несуществующий пользователь')
         return redirect(url_for('.index'))
     if not current_user.is_following(user):
-        flash('You are not following this user.')
+        flash('Вы не подписаны на этого пользователя')
         return redirect(url_for('.user', username=username))
     current_user.unfollow(user)
     db.session.commit()
-    flash('You are not following %s anymore.' % username)
+    flash('Вы больше не подписаны на %s' % username)
     return redirect(url_for('.user', username=username))
 
 
@@ -182,7 +231,7 @@ def unfollow(username):
 def followers(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Invalid user.')
+        flash('Несуществующий пользователь')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.paginate(
@@ -199,7 +248,7 @@ def followers(username):
 def followed_by(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Invalid user.')
+        flash('Несуществующий пользователь')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followed.paginate(

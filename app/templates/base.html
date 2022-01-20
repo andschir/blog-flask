@@ -8,6 +8,8 @@
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='content-styles.css') }}">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/static/showhide.js"></script>
 {% endblock %}
 
 {% block navbar %}
@@ -88,4 +90,5 @@
 {% block scripts %}
 {{ super() }}
 {{ moment.include_moment() }}
+{{ moment.lang('ru') }}
 {% endblock %}

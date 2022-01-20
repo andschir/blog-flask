@@ -112,14 +112,6 @@ class User(UserMixin, db.Model):
                                 cascade='all, delete-orphan')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
-    @staticmethod
-    def add_self_follows():
-        for user in User.query.all():
-            if not user.is_following(user):
-                user.follow(user)
-                db.session.add(user)
-                db.session.commit()
-
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
@@ -129,7 +121,6 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(default=True).first()
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
-        self.follow(self)
 
     @property
     def password(self):
@@ -202,7 +193,7 @@ class User(UserMixin, db.Model):
     def can(self, perm):
         return self.role is not None and self.role.has_permission(perm)
 
-    @property
+    # @property
     def is_administrator(self):
         return self.can(Permission.ADMIN)
 
@@ -244,7 +235,7 @@ class User(UserMixin, db.Model):
     @property
     def followed_posts(self):
         return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
-            .filter(Follow.follower_id == self.id)
+            .filter((Follow.follower_id == self.id) & (Post.status == Post.STATUS_PUBLIC))
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -279,6 +270,9 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+
+    def refresh_timestamp(self):
+        self.timestamp = datetime.utcnow()
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):

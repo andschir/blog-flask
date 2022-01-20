@@ -20,6 +20,8 @@
         <li{% if show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_followed') }}">Followed</a></li>
         {% endif %}
     </ul>
+    {% set active_page = 'index' %}
+    {% set showhide = 'hide' %}
     {% include '_posts.html' %}
 </div>
 {% if pagination %}
