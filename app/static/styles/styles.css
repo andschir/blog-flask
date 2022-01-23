@@ -125,27 +125,26 @@ div.flask-pagedown-preview h3 {
 
 /* Search */
 .search-container {
-/* top right bottom left */
-margin: 7px 7px 0px 0px;;
+    /* top right bottom left */
+    margin: 6px 5px 0px 0px;
+}
+.search-container button {
+    /* top right bottom left */
+    margin: 0px 0px 2px 0px;
 }
 input[type=search] {
-  display:block;
-  margin: 0 0 0 auto;
-  width: 65px;
-  height: 35px;
+  display:inline;
+  width: 165px;
   box-sizing: border-box;
   border: 2px solid grey;
   border-radius: 4px;
   font-size: 15px;
   color: white;
   background-color: #696969;
-  padding: 0px 0px 0px 6px;
   -webkit-transition: width 0.4s ease-in-out;
   transition: width 0.4s ease-in-out;
 }
-input[type=search]:focus {
-  width: 100%;
-}
+
 .post-button:hover {
     background-color: #808080 !important;
     color: #FFFFFF !important;
@@ -163,9 +162,7 @@ a:active { text-decoration: none; }
   -o-transition: height .5s;
   -webkit-transition: height .5s;
   transition: height .5s;
-
   overflow: hidden;
   line-height: 1em;
-
   height: 5em;
 }

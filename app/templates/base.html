@@ -6,10 +6,9 @@
 {{ super() }}
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='content-styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content-styles.css') }}">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="/static/showhide.js"></script>
 {% endblock %}
 
 {% block navbar %}
@@ -32,16 +31,20 @@
                 {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li class="search-container">
-                    <form>
-                        <input type="search" name="search" placeholder="Поиск..">
-                    </form>
+                <li>
+                     <div class="search-container">
+                         <form method="GET" action="{{ url_for('main.search') }}">
+                             <button type="submit" class="btn">Поиск</button>
+                             <input class="form-control" required type="search" name="q" placeholder="Поиск.."
+                                    value="{{ request.args.get('q', '') }}">
+                         </form>
+                    </div>
                 </li>
                 {% if current_user.can(Permission.MODERATE) %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             Tools <b class="caret"></b>
-                        </a>
+                    </a>
                     <ul class="dropdown-menu">
                         {% if current_user.can(Permission.MODERATE) %}
                         <li><a href="{{ url_for('main.moderate') }}">Moderate Comments</a></li>

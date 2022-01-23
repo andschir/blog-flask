@@ -30,6 +30,24 @@ def index():
                            show_followed=show_followed, pagination=pagination)
 
 
+@main.route('/search')
+def search():
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('q')
+    if search:
+        query = Post.query.filter_by(status=Post.STATUS_PUBLIC)\
+            .filter(Post.body.contains(search) |
+                    Post.title.contains(search))
+        pagination = query.order_by(Post.timestamp.desc()).paginate(
+            page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+            error_out=False)
+        posts = pagination.items
+        if len(posts) > -1:
+            posts_count = len(posts)
+    return render_template('search.html', posts=posts, posts_count=posts_count,
+                           pagination=pagination)
+
+
 @main.route('/create', methods=['GET', 'POST'])
 def create():
     form = PostForm()

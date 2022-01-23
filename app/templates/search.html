@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %}Flasky{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>
+        Поиск
+    </h1>
+    <h4>
+        Результатов найдено: {{ posts_count }}
+    </h4>
+</div>
+<div class="post-tabs">
+    {% set active_page = 'index' %}
+    {% set showhide = 'hide' %}
+    {% include '_posts.html' %}
+</div>
+{% if pagination %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, '.index') }}
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,3 +1,4 @@
+<script src="/static/scripts/showhide.js"></script>
 <ul class="posts">
     {% for post in posts %}
     <li class="post">
@@ -25,7 +26,7 @@
             <div class="post-body ck-content ">
                 {% if showhide == 'hide' %}
                     <div class='post-body-sizer'>
-                        <div>
+                        <div class='post-body-realsize'>
                             {% if post.body_html %}
                                 {{ (post.body_html | safe) }}
                             {% else %}
@@ -33,7 +34,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="showhide"><a href="#">Показать полностью</a></div>
+                    <div class="showhide"><a href="#"></a></div>
                 {% elif showhide == 'show' %}
                     {% if post.body_html %}
                         {{ (post.body_html | safe) }}
@@ -104,5 +105,6 @@
         </div>
     </li>
     {% endfor %}
+    <script src="/static/scripts/add_showhide.js"></script>
 </ul>
 

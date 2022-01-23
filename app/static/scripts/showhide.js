@@ -6,7 +6,7 @@ $(".showhide a").on("click", function() {
     var linkText = $this.text().toUpperCase();
 
     if (parent.clientHeight < content.clientHeight) {
-        parent.style.height = content.clientHeight + "px";
+        parent.style.height = content.clientHeight + 10 + "px";
         linkText = "Скрыть";
     } else {
         parent.style.height = '5em';

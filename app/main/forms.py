@@ -80,5 +80,5 @@ class PostForm(FlaskForm):
 
 
 class CommentForm(FlaskForm):
-    body = StringField('Enter your comment', validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    body = StringField('Введите ваш комментарий', validators=[DataRequired()])
+    submit = SubmitField('Отправить')
