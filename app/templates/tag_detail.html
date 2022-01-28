@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "bootstrap5/form.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %}Тег: {{ tag.name }}{% endblock %}
+
+{% block page_content %}
+{% if posts.count() != 0 %}
+  <div class="page-header">
+    <h4>Посты по тегу <span class="fw-light fst-italic">{{ tag.name }}</span></h4>
+  </div>
+  <div>
+    {% set active_page = 'index' %}
+    {% set showhide = 'hide' %}
+    {% include '_posts.html' %}
+    {% else %}
+    Записей с таким тегом не существует
+  </div>
+{% endif %}
+{% if pagination %}
+<div class="pagination">
+  {{ macros.pagination_widget(pagination, '.index') }}
+</div>
+{% endif %}
+{% endblock %}
+

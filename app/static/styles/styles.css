@@ -42,6 +42,12 @@ div.post-author a {
     font-weight: bold;
     text-decoration: none;
 }
+div.post-tags {
+    font-weight: 300;
+}
+div.post-tags a {
+    font-weight: 300;
+}
 div.post-thumbnail {
     position: absolute;
 }
@@ -198,3 +204,6 @@ input[type=search] {
 .search-checkbox-menu li.active label:focus {
     background-color: #CFCFCF;
 }
+
+.ui-helper-hidden-accessible { position: absolute; left:-999em; }
+

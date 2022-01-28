@@ -5,7 +5,7 @@ from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
     CommentForm
 from .. import db
-from ..models import Permission, Role, User, Post, Comment
+from ..models import Permission, Role, User, Post, Comment, Tag
 from ..decorators import admin_required, permission_required
 
 import os
@@ -59,6 +59,30 @@ def search():
                            pagination=pagination, search=search)
 
 
+@main.route('/post/<int:id>', methods=['GET', 'POST'])
+def post(id):
+    post = Post.query.get_or_404(id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          post=post,
+                          author=current_user._get_current_object())
+        db.session.add(comment)
+        db.session.commit()
+        flash('Ваш комментарий успешно опубликован')
+        return redirect(url_for('.post', id=post.id, page=-1))
+    page = request.args.get('page', 1, type=int)
+    if page == -1:
+        page = (post.comments.count() - 1) // \
+            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+    pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
+        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+        error_out=False)
+    comments = pagination.items
+    return render_template('post.html', posts=[post], form=form,
+                           comments=comments, pagination=pagination)
+
+
 @main.route('/create', methods=['GET', 'POST'])
 def create():
     form = PostForm()
@@ -66,11 +90,109 @@ def create():
         post = Post(title=form.title.data,
                     body=form.body.data,
                     author=current_user._get_current_object(),
-                    status=form.status.data)
+                    status=form.status.data,
+                    tags=form.tags.data)
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('.index'))
     return render_template('create.html', form=form, active_create='active')
+
+
+@main.route('/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author:
+        if not current_user.can(Permission.ADMIN):
+            abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.body = form.body.data
+        post.status = form.status.data
+        post.tags = form.tags.data
+        post.refresh_timestamp_modified()
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно отредактирована')
+        return redirect(url_for('.post', id=post.id))
+    form.title.data = post.title
+    form.body.data = post.body
+    form.status.data = post.status
+    form.tags.data = post.tags
+    return render_template('edit_post.html', form=form, post=post)
+
+
+@main.route('/delete/<int:id>', methods=['POST'])
+@login_required
+def delete(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_DELETED
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно удалена')
+        return redirect(url_for('.index'))
+
+
+@main.route('/recover/<int:id>', methods=['POST'])
+@login_required
+def recover(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_DRAFT
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно восстановлена')
+        return redirect(url_for('.index'))
+
+
+@main.route('/publish/<int:id>', methods=['POST'])
+@login_required
+def publish(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_PUBLIC
+        post.refresh_timestamp()
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно опубликована')
+        return redirect(url_for('.index'))
+
+
+@main.route('/tags', methods=['GET', 'POST'])
+def tags_index():
+    page = request.args.get('page', 1, type=int)
+    query = Tag.query
+    # pagination = query.order_by(Post.timestamp.desc()).paginate(
+    #     page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+    #     error_out=False)
+    # posts = pagination.items
+    tags = query
+    return render_template('tags_index.html', tags=tags)
+
+
+@main.route('/tags/<slug>', methods=['GET', 'POST'])
+def tag_detail(slug):
+    page = request.args.get('page', 1, type=int)
+    tag = Tag.query.filter(Tag.slug == slug).first_or_404()
+    query = tag.posts.order_by(Post.timestamp.desc())
+    # pagination = query.order_by(Post.timestamp.desc()).paginate(
+    #     page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+    #     error_out=False)
+    # posts = pagination.items
+    posts = query
+    return render_template('tag_detail.html', tag=tag, posts=posts)
+
 
 @main.route('/user/<username>')
 def user(username):
@@ -128,99 +250,6 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
-
-
-@main.route('/post/<int:id>', methods=['GET', 'POST'])
-def post(id):
-    post = Post.query.get_or_404(id)
-    form = CommentForm()
-    if form.validate_on_submit():
-        comment = Comment(body=form.body.data,
-                          post=post,
-                          author=current_user._get_current_object())
-        db.session.add(comment)
-        db.session.commit()
-        flash('Ваш комментарий успешно опубликован')
-        return redirect(url_for('.post', id=post.id, page=-1))
-    page = request.args.get('page', 1, type=int)
-    if page == -1:
-        page = (post.comments.count() - 1) // \
-            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
-    pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
-        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
-        error_out=False)
-    comments = pagination.items
-    return render_template('post.html', posts=[post], form=form,
-                           comments=comments, pagination=pagination)
-
-
-@main.route('/edit/<int:id>', methods=['GET', 'POST'])
-@login_required
-def edit(id):
-    post = Post.query.get_or_404(id)
-    if current_user != post.author:
-        if not current_user.can(Permission.ADMIN):
-            abort(403)
-    form = PostForm()
-    if form.validate_on_submit():
-        post.title = form.title.data
-        post.body = form.body.data
-        post.status = form.status.data
-        post.refresh_timestamp_modified()
-        db.session.add(post)
-        db.session.commit()
-        flash('Запись успешно отредактирована')
-        return redirect(url_for('.post', id=post.id))
-    form.title.data = post.title
-    form.body.data = post.body
-    form.status.data = post.status
-    return render_template('edit_post.html', post=post, form=form)
-
-
-@main.route('/delete/<int:id>', methods=['POST'])
-@login_required
-def delete(id):
-    post = Post.query.get_or_404(id)
-    if current_user != post.author and \
-            not current_user.can(Permission.ADMIN):
-        abort(403)
-    if request.method == 'POST':
-        post.status = Post.STATUS_DELETED
-        db.session.add(post)
-        db.session.commit()
-        flash('Запись успешно удалена')
-        return redirect(url_for('.index'))
-
-
-@main.route('/recover/<int:id>', methods=['POST'])
-@login_required
-def recover(id):
-    post = Post.query.get_or_404(id)
-    if current_user != post.author and \
-            not current_user.can(Permission.ADMIN):
-        abort(403)
-    if request.method == 'POST':
-        post.status = Post.STATUS_DRAFT
-        db.session.add(post)
-        db.session.commit()
-        flash('Запись успешно восстановлена')
-        return redirect(url_for('.index'))
-
-
-@main.route('/publish/<int:id>', methods=['POST'])
-@login_required
-def publish(id):
-    post = Post.query.get_or_404(id)
-    if current_user != post.author and \
-            not current_user.can(Permission.ADMIN):
-        abort(403)
-    if request.method == 'POST':
-        post.status = Post.STATUS_PUBLIC
-        post.refresh_timestamp()
-        db.session.add(post)
-        db.session.commit()
-        flash('Запись успешно опубликована')
-        return redirect(url_for('.index'))
 
 
 @main.route('/follow/<username>')
@@ -349,7 +378,8 @@ def uploaded_files(filename):
     app = current_app._get_current_object()
     path = app.config['UPLOADED_PATH']
     return send_from_directory(path, filename)
-    
+
+
 @main.route('/upload', methods=['POST'])
 def upload():
     app = current_app._get_current_object()
@@ -361,3 +391,11 @@ def upload():
     f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
     url = url_for('main.uploaded_files', filename=f.filename)
     return jsonify(url=url)
+
+
+@main.route('/autocomplete', methods=['GET'])
+def autocomplete():
+    search = request.args.get('autocomplete')
+    query = db.session.query(Tag.name).filter(Tag.name.like('%' + str(search) + '%'))
+    results = [i[0] for i in query.all()]
+    return jsonify(json_list=results)

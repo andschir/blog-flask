@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
-from ..models import Role, User, Post
+from ..models import Role, User, Post, Tag
 
 
 class NameForm(FlaskForm):
@@ -65,6 +65,33 @@ class CKEditorField(TextAreaField):
     widget = CKEditor()
 
 
+class TagField(StringField):
+    def _value(self):
+        if self.data:
+            # Display tags as a comma-separated list.
+            return ', '.join([tag.name for tag in self.data])
+        return ''
+
+    def get_tags_from_string(self, tag_string):
+        raw_tags = tag_string.split(',')
+        # Filter out any empty tag names.
+        tag_names = [name.strip() for name in raw_tags if name.strip()]
+        # Query the database and retrieve any tags we have already saved.
+        existing_tags = Tag.query.filter(Tag.name.in_(tag_names))
+        # Determine which tag names are new.
+        new_names = set(tag_names) - set([tag.name for tag in existing_tags])
+        # Create a list of unsaved Tag instances for the new tags.
+        new_tags = [Tag(name=name) for name in new_names]
+        # Return all the existing tags + all the new, unsaved tags.
+        return list(existing_tags) + new_tags
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            self.data = self.get_tags_from_string(valuelist[0])
+        else:
+            self.data = []
+
+
 class PostForm(FlaskForm):
     title = CKEditorField('Заголовок')
     body = TextAreaField('Текст')
@@ -77,6 +104,9 @@ class PostForm(FlaskForm):
         ),
         coerce=int
     )
+    tags = TagField('Теги:',
+                    render_kw={"placeholder": "Введите теги, разделяя их запятой",
+                                        })
 
 
 class CommentForm(FlaskForm):

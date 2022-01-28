@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "bootstrap5/form.html" as wtf %}
+{% import "_macros.html" as macros %}
+
+{% block title %}Теги{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+  <h4>Поиск по тегам</h4>
+</div>
+<div>
+  {% for tag in tags | sort(attribute="name") %}
+    <div>
+      <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a> ({{ tag.posts.count() }})
+    </div>
+  {% endfor %}
+</div>
+{% if pagination %}
+<div class="pagination">
+  {{ macros.pagination_widget(pagination, '.index') }}
+</div>
+{% endif %}
+{% endblock %}
+

@@ -7,6 +7,7 @@ import bleach
 from flask import current_app, request
 from flask_login import UserMixin, AnonymousUserMixin
 from . import db, login_manager
+from slugify import slugify
 
 
 class Permission:
@@ -234,7 +235,7 @@ class User(UserMixin, db.Model):
 
     @property
     def followed_posts(self):
-        return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
             .filter((Follow.follower_id == self.id) & (Post.status == Post.STATUS_PUBLIC))
 
     def __repr__(self):
@@ -248,12 +249,19 @@ class AnonymousUser(AnonymousUserMixin):
     def is_administrator(self):
         return False
 
+
 login_manager.anonymous_user = AnonymousUser
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+post_tags = db.Table('post_tags',
+                     db.Column('tag_id', db.Integer, db.ForeignKey('tags.id')),
+                     db.Column('post_id', db.Integer, db.ForeignKey('posts.id'))
+                     )
 
 
 class Post(db.Model):
@@ -271,6 +279,8 @@ class Post(db.Model):
     timestamp_modified = db.Column(db.DateTime, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    tags = db.relationship('Tag', secondary=post_tags,
+                           backref=db.backref('posts', lazy='dynamic'))
 
     def refresh_timestamp(self):
         self.timestamp = datetime.utcnow()
@@ -294,7 +304,7 @@ class Post(db.Model):
             'text-align',
             'position', 'padding-bottom', 'height', 'width', 'top', 'left',
             'font-family',
-            ]
+        ]
         allowed_attrs = {
             '*': ['class', 'title', 'style'],
             'a': ['href', 'rel', 'id', 'name'],
@@ -322,6 +332,7 @@ class Post(db.Model):
         #     value, tags=allowed_tags, attributes=allowed_attrs,
         #     styles=allowed_styles, strip=True))
 
+
 db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 
@@ -343,4 +354,19 @@ class Comment(db.Model):
             markdown(value, output_format='html'),
             tags=allowed_tags, strip=True))
 
+
 db.event.listen(Comment.body, 'set', Comment.on_changed_body)
+
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    slug = db.Column(db.String(64), unique=True)
+
+    def __init__(self, *args, **kwargs):
+        super(Tag, self).__init__(*args, **kwargs)
+        self.slug = slugify(self.name, max_length=60, word_boundary=True)
+
+    def __repr__(self):
+        return '<Tag %s>' % self.name

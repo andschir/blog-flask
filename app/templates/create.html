@@ -19,7 +19,7 @@
 </div>
 
 <div class="container mb-3">
-  <form action="{{ url_for('main.create') }}" class="form form-group form-horizontal text-center" method="POST">
+  <form action="{{ url_for('main.create') }}" class="form form-group form-horizontal" method="POST">
     {{ form.csrf_token }}
     <div class="row mx-auto mt-3">
       <h3>{{ form.title.label(class='control-label') }}</h3>
@@ -35,6 +35,9 @@
     </div>
     {% include '_cke_config.html' %}
     <div class="row mx-auto mt-3">
+        <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>
+    </div>
+    <div class="row mx-auto mt-3 text-center">
       <div class="form-group">
         <span>{{ form.status.label(class='control-label') }} {{ form.status }}</span>
       </div>
