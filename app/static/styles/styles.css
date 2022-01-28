@@ -8,6 +8,9 @@
 	font-weight: normal;
 	font-style: normal;
 }
+a {
+    color: #767676;
+}
 .profile-thumbnail {
     position: absolute;
 }
@@ -15,18 +18,11 @@
     min-height: 260px;
     margin-left: 280px;
 }
-div.post-tabs {
-    margin-top: 16px;
-}
 ul.posts {
     list-style-type: none;
     padding: 0px;
     margin: 16px 0px 0px 0px;
     border-top: 1px solid #e0e0e0;
-}
-div.post-tabs ul.posts {
-    margin: 0px;
-    border-top: none;
 }
 ul.posts li.post {
     padding: 8px;
@@ -35,11 +31,16 @@ ul.posts li.post {
 ul.posts li.post:hover {
     background-color: #f0f0f0;
 }
-div.post-date {
+div.post-stamp a {
+    float: right;
+    text-decoration: none;
+}
+div.post-edited {
     float: right;
 }
-div.post-author {
+div.post-author a {
     font-weight: bold;
+    text-decoration: none;
 }
 div.post-thumbnail {
     position: absolute;
@@ -53,18 +54,12 @@ div.post-content {
     margin-left: 48px;
     min-height: 48px;
 }
-div.post-footer {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
 ul.comments {
     list-style-type: none;
     padding: 0px;
     margin: 16px 0px 0px 0px;
 }
 ul.comments li.comment {
-    margin-left: 32px;
     padding: 8px;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -80,15 +75,15 @@ div.comment-date {
 div.comment-author {
     font-weight: bold;
 }
+div.comment-author a {
+    text-decoration: none;
+}
 div.comment-thumbnail {
     position: absolute;
 }
 div.comment-content {
     margin-left: 48px;
     min-height: 48px;
-}
-div.comment-form {
-    margin: 16px 0px 16px 32px;
 }
 div.pagination {
     width: 100%;
@@ -134,27 +129,26 @@ div.flask-pagedown-preview h3 {
 }
 input[type=search] {
   display:inline;
-  width: 165px;
+  width: 100px;
   box-sizing: border-box;
-  border: 2px solid grey;
+  border: 1px solid grey;
   border-radius: 4px;
   font-size: 15px;
-  color: white;
-  background-color: #696969;
+  color: black;
+  background-color: #F0F0F0;
   -webkit-transition: width 0.4s ease-in-out;
   transition: width 0.4s ease-in-out;
 }
-
-.post-button:hover {
-    background-color: #808080 !important;
-    color: #FFFFFF !important;
-    background-image: none !important;
-    text-decoration: underline;
+.post-buttons > form {
+    display: inline-block;
+    margin: 2px;
 }
-a:link { text-decoration: none; }
-a:visited { text-decoration: none; }
-a:hover { text-decoration: none; }
-a:active { text-decoration: none; }
+.post-links > a {
+    margin: 5px;
+}
+.post-links > a:hover {
+    color: #DC7B86;
+}
 
 .post-body-sizer {
   -moz-transition: height .5s;
@@ -165,4 +159,42 @@ a:active { text-decoration: none; }
   overflow: hidden;
   line-height: 1em;
   height: 5em;
+}
+.showhide {
+    float: left;
+}
+
+.search-checkbox-menu li label {
+    display: block;
+    padding: 3px 10px;
+    clear: both;
+    font-weight: normal;
+    line-height: 1em;
+    color: #333;
+    white-space: nowrap;
+    margin:0;
+    transition: background-color .4s ease;
+}
+.search-checkbox-menu li .title {
+    margin: 0px 5px;
+    padding: 3px 10px;
+    top: 1px;
+    position: relative;
+}
+.search-checkbox-menu li input {
+    margin: 0px 5px;
+    top: 1px;
+    position: relative;
+}
+.search-checkbox-menu li.active label {
+    background-color: #DCDCDC;
+    font-weight:bold;
+}
+.search-checkbox-menu li label:hover,
+.search-checkbox-menu li label:focus {
+    background-color: #F0F0F0;
+}
+.search-checkbox-menu li.active label:hover,
+.search-checkbox-menu li.active label:focus {
+    background-color: #CFCFCF;
 }

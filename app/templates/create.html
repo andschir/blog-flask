@@ -1,41 +1,48 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 
-{% block title %}Create post{% endblock %}
+{% block title %}Создать запись{% endblock %}
 
 {% block head %}
-    {{ super() }}
-<!--    <script src="static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
-    <script src="/static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
+  {{ super() }}
+  <!--    <script src="static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
+  <script src="/static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
 {% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    {% if current_user.can(Permission.WRITE) %}
-    <h2>Новая запись</h2>
-    {% else %}
-    <h1>Read-only: У вас нет разрешения создавать записи</h1>
-    {% endif %}
+  {% if current_user.can(Permission.WRITE) %}
+  <h2>Новая запись</h2>
+  {% else %}
+  <h1>Read-only: У вас нет разрешения создавать записи</h1>
+  {% endif %}
 </div>
 
-<form action="{{ url_for('main.create') }}" class="form form-group form-horizontal text-center" method="POST">
-{{ form.csrf_token }}
-    <div class="row ">
-        <h3>{{ form.title.label(class='control-label') }}</h3>
+<div class="container mb-3">
+  <form action="{{ url_for('main.create') }}" class="form form-group form-horizontal text-center" method="POST">
+    {{ form.csrf_token }}
+    <div class="row mx-auto mt-3">
+      <h3>{{ form.title.label(class='control-label') }}</h3>
+      <div class="">
         {{ form.title }}
+      </div>
     </div>
-    <div class="row ">
-        <h3>{{ form.body.label(class='control-label') }}</h3>
+    <div class="row mx-auto mt-3">
+      <h3>{{ form.body.label(class='control-label') }}</h3>
+      <div class="">
         {{ form.body }}
+      </div>
     </div>
     {% include '_cke_config.html' %}
-    <div class="row">
-        <div class="form-group">
-            <h3>{{ form.status.label(class='control-label') }}</h3>
-            {{ form.status }}
-        </div>
+    <div class="row mx-auto mt-3">
+      <div class="form-group">
+        <span>{{ form.status.label(class='control-label') }} {{ form.status }}</span>
+      </div>
+      <div class="form-group mt-3">
         <button type="submit" class="btn btn-primary">Создать</button>
         <a class="btn btn-danger" type="button" href="{{ url_for('main.index') }}">Отмена</a>
+      </div>
     </div>
-</form>
+  </form>
+</div>
 {% endblock %}

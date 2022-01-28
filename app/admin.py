@@ -164,21 +164,22 @@ def add_admin_views(app_instance):
         column_type_formatters = MY_DEFAULT_FORMATTERS
 
         column_list = [
-            'id', 'status', 'timestamp', 'author.username', 'title', 'body'
+            'id', 'status', 'timestamp', 'timestamp_modified', 'author.username', 'title', 'body'
         ]
         column_filters = (
-            'id', 'status', 'timestamp', 'author.username', 'title', 'body'
+            'id', 'status', 'timestamp', 'timestamp_modified', 'author.username', 'title', 'body'
         )
         column_searchable_list = (
             'title', 'body'
         )
         column_sortable_list = (
-            'id', 'status', 'timestamp', 'author.username', 'title', 'body'
+            'id', 'status', 'timestamp', 'timestamp_modified', 'author.username', 'title', 'body'
         )
         column_default_sort = ('id', True)
         column_labels = {
             'id': 'Порядковый номер',
             'timestamp': 'Дата создания',
+            'timestamp_modified': 'Дата изменения',
             'author.username': 'Автор',
             'title': 'Заголовок',
             'body': 'Текст'
@@ -189,7 +190,7 @@ def add_admin_views(app_instance):
             'body': _html_formatter
         }
         form_columns = [
-            'comments', 'status', 'timestamp', 'author'
+            'comments', 'status', 'timestamp', 'timestamp_modified', 'author'
         ]
         form_overrides = {'status': SelectField}
         form_args = {
@@ -200,6 +201,9 @@ def add_admin_views(app_instance):
         }
         form_widget_args = {
             'timestamp': {
+                'disabled': True
+            },
+            'timestamp_modified': {
                 'disabled': True
             }
         }

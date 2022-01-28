@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_bootstrap import Bootstrap
+from flask_bootstrap import Bootstrap5
 from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
@@ -7,8 +7,9 @@ from flask_login import LoginManager
 from flask_pagedown import PageDown
 from flask_ckeditor import CKEditor
 from config import config
+import locale
 
-bootstrap = Bootstrap()
+bootstrap = Bootstrap5()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
@@ -17,6 +18,9 @@ ckeditor = CKEditor()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
+
+app_language = 'ru_UA.utf8'
+locale.setlocale(locale.LC_ALL, app_language)
 
 
 def create_app(config_name):

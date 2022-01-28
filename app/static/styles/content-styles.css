@@ -410,3 +410,7 @@
         display: none;
     }
 }
+
+.ck-source-editing-area textarea {
+    left: 0 !important;
+}

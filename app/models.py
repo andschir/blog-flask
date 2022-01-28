@@ -268,11 +268,15 @@ class Post(db.Model):
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    timestamp_modified = db.Column(db.DateTime, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     def refresh_timestamp(self):
         self.timestamp = datetime.utcnow()
+
+    def refresh_timestamp_modified(self):
+        self.timestamp_modified = datetime.utcnow()
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):

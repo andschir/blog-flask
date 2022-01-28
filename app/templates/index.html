@@ -1,32 +1,38 @@
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap5/form.html" as wtf %}
 {% import "_macros.html" as macros %}
 
 {% block title %}Flasky{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h4>Hello,
-        {% if current_user.is_authenticated %}
-            {{ current_user.username }}
-        {% else %}
-            Stranger
-        {% endif %}!</h4>
+  <h4>Hello,
+    {% if current_user.is_authenticated %}
+    {{ current_user.username }}
+    {% else %}
+    Stranger
+    {% endif %}!</h4>
 </div>
 <div class="post-tabs">
-    <ul class="nav nav-tabs">
-        <li{% if not show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_all') }}">All</a></li>
-        {% if current_user.is_authenticated %}
-        <li{% if show_followed %} class="active"{% endif %}><a href="{{ url_for('.show_followed') }}">Followed</a></li>
-        {% endif %}
-    </ul>
-    {% set active_page = 'index' %}
-    {% set showhide = 'hide' %}
-    {% include '_posts.html' %}
+  <ul class="nav nav-tabs mt-3">
+    <li class="nav-item">
+      <a class="nav-link{% if not show_followed %} active{% endif %}" href="{{ url_for('.show_all') }}">
+      Все</a>
+    </li>
+    {% if current_user.is_authenticated %}
+    <li class="nav-item">
+      <a class="nav-link{% if  show_followed %} active{% endif %}" href="{{ url_for('.show_followed') }}">
+        Подписки</a>
+    </li>
+    {% endif %}
+  </ul>
+  {% set active_page = 'index' %}
+  {% set showhide = 'hide' %}
+  {% include '_posts.html' %}
 </div>
 {% if pagination %}
 <div class="pagination">
-    {{ macros.pagination_widget(pagination, '.index') }}
+  {{ macros.pagination_widget(pagination, '.index') }}
 </div>
 {% endif %}
 {% endblock %}

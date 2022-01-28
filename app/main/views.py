@@ -27,17 +27,28 @@ def index():
         error_out=False)
     posts = pagination.items
     return render_template('index.html', posts=posts,
-                           show_followed=show_followed, pagination=pagination)
+                           show_followed=show_followed, pagination=pagination,
+                           active_main='active')
 
 
-@main.route('/search')
+@main.route('/search', methods=['GET', 'POST'])
 def search():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('q')
-    if search:
-        query = Post.query.filter_by(status=Post.STATUS_PUBLIC)\
-            .filter(Post.body.contains(search) |
-                    Post.title.contains(search))
+    posts = []
+    posts_count = 0
+    pagination = []
+    if request.method == 'GET':
+        print(search)
+        title_checked = request.args.get('title')
+        body_checked = request.args.get('body')
+        if (title_checked and body_checked) or (not title_checked) and (not body_checked):
+            mask = Post.body.contains(search) | Post.title.contains(search)
+        elif title_checked:
+            mask = Post.title.contains(search)
+        elif body_checked:
+            mask = Post.body.contains(search)
+        query = Post.query.filter_by(status=Post.STATUS_PUBLIC).filter(mask)
         pagination = query.order_by(Post.timestamp.desc()).paginate(
             page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
             error_out=False)
@@ -45,7 +56,7 @@ def search():
         if len(posts) > -1:
             posts_count = len(posts)
     return render_template('search.html', posts=posts, posts_count=posts_count,
-                           pagination=pagination)
+                           pagination=pagination, search=search)
 
 
 @main.route('/create', methods=['GET', 'POST'])
@@ -59,7 +70,7 @@ def create():
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('.index'))
-    return render_template('create.html', form=form)
+    return render_template('create.html', form=form, active_create='active')
 
 @main.route('/user/<username>')
 def user(username):
@@ -147,14 +158,15 @@ def post(id):
 @login_required
 def edit(id):
     post = Post.query.get_or_404(id)
-    if current_user != post.author and \
-            not current_user.can(Permission.ADMIN):
-        abort(403)
+    if current_user != post.author:
+        if not current_user.can(Permission.ADMIN):
+            abort(403)
     form = PostForm()
     if form.validate_on_submit():
         post.title = form.title.data
         post.body = form.body.data
         post.status = form.status.data
+        post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
         flash('Запись успешно отредактирована')

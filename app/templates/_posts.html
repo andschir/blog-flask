@@ -1,110 +1,116 @@
 <script src="/static/scripts/showhide.js"></script>
-<ul class="posts">
-    {% for post in posts %}
-    <li class="post">
-        <div class="post-thumbnail">
-            <a href="{{ url_for('.user', username=post.author.username) }}">
-                <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
-            </a>
-        </div>
-        <div class="post-content">
-            <div class="post-date">
-                {{ moment(post.timestamp).fromNow() }}
-                <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}">
+<ul class="posts mt-0 border-top-0">
+  {% for post in posts %}
+  <li class="post">
+    <div class="post-thumbnail">
+      <a href="{{ url_for('.user', username=post.author.username) }}">
+        <img class="rounded-circle profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+      </a>
+    </div>
+    <div class="post-content">
+      <div class="post-stamp">
+        <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}">
                     <span class="label label-default">
                         {% if post.status == post.STATUS_DELETED %}
                         [Удаленная]
                         {% elif post.status == post.STATUS_DRAFT %}
                         [Черновик]
                         {% endif %}Запись #{{ post.id }}</span>
-                </a>
-            </div>
-            <div class="post-author"><a href="{{ url_for('.user', username=post.author.username) }}">{{ post.author.username }}</a></div>
-            <div class="post-title ck-content">
-                {{ post.title | safe }}
-            </div>
-            <div class="post-body ck-content ">
-                {% if showhide == 'hide' %}
-                    <div class='post-body-sizer'>
-                        <div class='post-body-realsize'>
-                            {% if post.body_html %}
-                                {{ (post.body_html | safe) }}
-                            {% else %}
-                                {{ post.body }}
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="showhide"><a href="#"></a></div>
-                {% elif showhide == 'show' %}
-                    {% if post.body_html %}
-                        {{ (post.body_html | safe) }}
-                    {% else %}
-                        {{ post.body }}
-                    {% endif %}
-                {% endif %}
-            </div>
-            <div class="post-footer">
-                <div class="col-4">
-                    {% if current_user == post.author %}
-                        {% if post.status == post.STATUS_DELETED %}
-                        <form style="display: inline-block;"
-                              method="POST" action="{{ url_for('main.recover', id=post.id) }}">
-                            <button type="submit" class="post-button label label-danger btn-link">Восстановить</button>
-                        </form>
-                        {% else %}
-                        <form style="display: inline-block;" method="POST" action="{{ url_for('.edit', id=post.id) }}">
-                            <button type="submit" class="post-button label label-primary btn-link">Редактировать</button>
-                        </form>
-                        <form style="display: inline-block;" method="POST" action="{{ url_for('main.delete', id=post.id) }}">
-                            <button type="submit" class="post-button label label-danger btn-link">Удалить</button>
-                        </form>
-                        {% if post.status == post.STATUS_DRAFT %}
-                        <form style="display: inline-block;" method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-                            <button type="submit" class="post-button label label-warning btn-link">Опубликовать</button>
-                        </form>
-                        {% endif %}
-                        {% endif %}
-                    {% elif current_user.is_administrator() %}
-                        {% if post.status == post.STATUS_DELETED %}
-                        <form style="display: inline-block;"
-                              method="POST" action="{{ url_for('main.recover', id=post.id) }}">
-                            <button type="submit" class="post-button label label-danger btn-link">Восстановить [АДМИН]</button>
-                        </form>
-                        {% else %}
-                        <form style="display: inline-block;" method="POST" action="{{ url_for('.edit', id=post.id) }}">
-                            <button type="submit" class="post-button label label-primary btn-link">Редактировать [АДМИН]</button>
-                        </form>
-                        <form style="display: inline-block;" method="POST" action="{{ url_for('main.delete', id=post.id) }}">
-                            <button type="submit" class="post-button label label-danger btn-link">Удалить [АДМИН]</button>
-                        </form>
-                        {% if post.status == post.STATUS_DRAFT %}
-                        <form style="display: inline-block;" method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-                            <button type="submit" class="post-button label label-warning btn-link">Опубликовать [АДМИН]</button>
-                        </form>
-                        {% endif %}
-                        {% endif %}
-                    {% endif %}
-                </div>
-                <div class="col offset">
-                    {% if ( (active_page == 'index') and (post.body|length > 200) ) %}
-                     <a style=" margin-right: 5px;" href="{{ url_for('.post', id=post.id) }}">
-                        <span class="post-button label label-default">
-                        Читать далее
-                        </span>
-                    </a>
-                    {% endif %}
-                    {% if post.status == post.STATUS_PUBLIC %}
-                    <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}#comments">
-                        <span class="post-button label label-primary">
-                        Комментарии: {{ post.comments.count() }}
-                        </span>
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
+        </a>
+      </div>
+      <div class="post-author"><a href="{{ url_for('.user', username=post.author.username) }}">
+        {{ post.author.username }}</a>
+        <span class="fw-light fst-italic">{{ post.timestamp.strftime('%d %B %Y') }}</span>
+      </div>
+      <div class="post-title ck-content">
+        {{ post.title | safe }}
+      </div>
+      <div class="post-body ck-content ">
+        {% if showhide == 'hide' %}
+        <div class='post-body-sizer'>
+          <div class='post-body-realsize'>
+            {% if post.body_html %}
+            {{ (post.body_html | safe) }}
+            {% else %}
+            {{ post.body }}
+            {% endif %}
+          </div>
         </div>
-    </li>
-    {% endfor %}
-    <script src="/static/scripts/add_showhide.js"></script>
+        <div class="mt-2 showhide">
+          <a href="#"></a>
+        </div>
+        {% elif showhide == 'show' %}
+        {% if post.body_html %}
+        {{ (post.body_html | safe) }}
+        {% else %}
+        {{ post.body }}
+        {% endif %}
+        {% endif %}
+        <div class="mt-2 fw-light fst-italic post-edited">
+          {% if post.timestamp_modified.strftime('%m %d %Y %H %M %S') != post.timestamp.strftime('%m %d %Y %H %M %S') %}
+            Отредактировано: {{ moment(post.timestamp_modified).fromNow() }}
+          {% endif %}
+        </div>
+      </div>
+      <div class="container p-0">
+        <div class="d-flex mt-5 justify-content-between">
+          <div class="col-6 post-buttons">
+            {% if current_user == post.author %}
+            {% if post.status == post.STATUS_DELETED %}
+            <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-secondary">Восстановить</button>
+            </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('main.edit', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-secondary">Редактировать</button>
+            </form>
+            <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-danger">Удалить</button>
+            </form>
+            {% if post.status == post.STATUS_DRAFT %}
+            <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-success">Опубликовать</button>
+            </form>
+            {% endif %}
+            {% endif %}
+            {% elif current_user.is_administrator() %}
+            {% if post.status == post.STATUS_DELETED %}
+            <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-secondary">Восстановить [АДМИН]</button>
+            </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('main.edit', id=post.id, edit_as_admin=True) }}">
+              <button type="submit" class="post-button btn btn-secondary">Редактировать [АДМИН]</button>
+            </form>
+            <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-danger">Удалить [АДМИН]</button>
+            </form>
+            {% if post.status == post.STATUS_DRAFT %}
+            <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
+              <button type="submit" class="post-button btn btn-success">Опубликовать [АДМИН]</button>
+            </form>
+            {% endif %}
+            {% endif %}
+            {% endif %}
+          </div>
+          <div class="d-flex col-6 justify-content-end post-links">
+            {% if (active_page == 'index') %}
+            <a href="{{ url_for('.post', id=post.id) }}">
+              <span>Читать далее</span>
+            </a>
+            {% endif %}
+            {% if post.status == post.STATUS_PUBLIC %}
+            <a href="{{ url_for('.post', id=post.id) }}#comments">
+              <span>Комментарии</span>
+              <span class="ms-1 badge bg-secondary rounded-pill">{{ post.comments.count() }}</span>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+  <script src="/static/scripts/add_showhide.js"></script>
 </ul>
 
