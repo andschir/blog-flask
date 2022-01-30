@@ -1,0 +1,10 @@
+{% extends admin_base_template %}
+{% block head_css %}
+    {{ super() }}
+    <style>
+        .table td.col-body {
+            max-height: 8em !important;
+            overflow: hidden !important;
+        }
+    </style>
+{% endblock %}

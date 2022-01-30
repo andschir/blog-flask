@@ -1,10 +1,8 @@
 $(document).ready(function() {
-    $.ajax({
-        url: '../autocomplete'
-    }).done(function (data) {
+    $.ajax({}).done(function (data) {
         $('#tags').autocomplete({
             source:function(request, response) {
-                $.getJSON("autocomplete",{
+                $.getJSON("/autocomplete",{
                     autocomplete: request.term,
                 }, function(data) {
                     response(data.json_list);

@@ -205,5 +205,6 @@ input[type=search] {
     background-color: #CFCFCF;
 }
 
-.ui-helper-hidden-accessible { position: absolute; left:-999em; }
-
+.ui-helper-hidden-accessible {
+    position: absolute; left:-999em;
+}

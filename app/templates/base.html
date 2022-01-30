@@ -6,10 +6,10 @@
 {{ super() }}
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content-styles.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.0/themes/base/jquery-ui.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content-styles.css') }}">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.0/jquery-ui.min.js"></script>
 <script src="/static/scripts/search_checkbox_menu.js"></script>
@@ -35,6 +35,9 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
           <a class="nav-link {{ active_main }}" aria-current="page" href="{{ url_for('main.index') }}">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ active_tags }}" aria-current="page" href="{{ url_for('main.tags_index') }}">Теги</a>
         </li>
         <li class="nav-item">
           <a class="nav-link {{ active_create }}" href="{{ url_for('main.create') }}">Новая запись</a>
@@ -89,7 +92,7 @@
 
         {% if current_user.is_authenticated %}
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle {{ active_profile }}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <img class="rounded-circle" src="{{ current_user.gravatar(size=18) }}">
             Аккаунт <b class="caret"></b>
           </a>

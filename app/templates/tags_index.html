@@ -8,13 +8,29 @@
 <div class="page-header">
   <h4>Поиск по тегам</h4>
 </div>
-<div>
-  {% for tag in tags | sort(attribute="name") %}
+
+<div class="w-50">
+  <form class="d-flex" role="search" method="GET" action="{{ url_for('main.search') }}">
+    <div class="input-group mb-3">
+      <button type="submit" class="btn btn-outline-secondary">Поиск</button>
+      <input required class="form-control" type="search" name="t" id="tags"
+             value="{{ request.args.get('t', '') }}" aria-label="Search">
+    </div>
+  </form>
+</div>
+
+<div class="page-header">
+  <h5>Все теги:</h5>
+</div>
+<ul>
+  {% for tag in tags %}
     <div>
-      <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a> ({{ tag.posts.count() }})
+      <li>
+        <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a> ({{ tag.posts.count() }})
+      </li>
     </div>
   {% endfor %}
-</div>
+</ul>
 {% if pagination %}
 <div class="pagination">
   {{ macros.pagination_widget(pagination, '.index') }}

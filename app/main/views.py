@@ -34,28 +34,34 @@ def index():
 @main.route('/search', methods=['GET', 'POST'])
 def search():
     page = request.args.get('page', 1, type=int)
-    search = request.args.get('q')
+    search = ''
     posts = []
-    posts_count = 0
+    tags = []
     pagination = []
     if request.method == 'GET':
-        print(search)
-        title_checked = request.args.get('title')
-        body_checked = request.args.get('body')
-        if (title_checked and body_checked) or (not title_checked) and (not body_checked):
-            mask = Post.body.contains(search) | Post.title.contains(search)
-        elif title_checked:
-            mask = Post.title.contains(search)
-        elif body_checked:
-            mask = Post.body.contains(search)
-        query = Post.query.filter_by(status=Post.STATUS_PUBLIC).filter(mask)
-        pagination = query.order_by(Post.timestamp.desc()).paginate(
-            page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-            error_out=False)
-        posts = pagination.items
-        if len(posts) > -1:
-            posts_count = len(posts)
-    return render_template('search.html', posts=posts, posts_count=posts_count,
+        if request.args.get('q'):
+            search = request.args.get('q')
+            title_checked = request.args.get('title')
+            body_checked = request.args.get('body')
+            if (title_checked and body_checked) or (not title_checked) and (not body_checked):
+                mask = Post.body.contains(search) | Post.title.contains(search)
+            elif title_checked:
+                mask = Post.title.contains(search)
+            elif body_checked:
+                mask = Post.body.contains(search)
+            query = Post.query.filter_by(status=Post.STATUS_PUBLIC).filter(mask)
+            pagination = query.order_by(Post.timestamp.desc()).paginate(
+                page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+                error_out=False)
+            posts = pagination.items
+        elif request.args.get('t'):
+            search = request.args.get('t')
+            query = db.session.query(Tag).filter(Tag.name.like('%' + str(search) + '%'))
+            pagination = query.order_by(Tag.name.desc()).paginate(
+                page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+                error_out=False)
+            tags = pagination.items
+    return render_template('search.html', posts=posts, tags=tags,
                            pagination=pagination, search=search)
 
 
@@ -173,25 +179,25 @@ def publish(id):
 def tags_index():
     page = request.args.get('page', 1, type=int)
     query = Tag.query
-    # pagination = query.order_by(Post.timestamp.desc()).paginate(
-    #     page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-    #     error_out=False)
-    # posts = pagination.items
-    tags = query
-    return render_template('tags_index.html', tags=tags)
+    pagination = query.order_by(Tag.name.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False)
+    tags = pagination.items
+    return render_template('tags_index.html', tags=tags,
+                           pagination=pagination, active_tags='active')
 
 
 @main.route('/tags/<slug>', methods=['GET', 'POST'])
 def tag_detail(slug):
     page = request.args.get('page', 1, type=int)
     tag = Tag.query.filter(Tag.slug == slug).first_or_404()
-    query = tag.posts.order_by(Post.timestamp.desc())
-    # pagination = query.order_by(Post.timestamp.desc()).paginate(
-    #     page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
-    #     error_out=False)
-    # posts = pagination.items
-    posts = query
-    return render_template('tag_detail.html', tag=tag, posts=posts)
+    query = tag.posts
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        error_out=False)
+    posts = pagination.items
+    return render_template('tag_detail.html', tag=tag, posts=posts,
+                           pagination=pagination)
 
 
 @main.route('/user/<username>')
@@ -202,8 +208,11 @@ def user(username):
         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
         error_out=False)
     posts = pagination.items
+    active_profile = ''
+    if user == current_user:
+        active_profile = 'active'
     return render_template('user.html', user=user, posts=posts,
-                           pagination=pagination)
+                           pagination=pagination, active_profile=active_profile)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])

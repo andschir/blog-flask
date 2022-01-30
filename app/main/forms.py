@@ -69,7 +69,7 @@ class TagField(StringField):
     def _value(self):
         if self.data:
             # Display tags as a comma-separated list.
-            return ', '.join([tag.name for tag in self.data])
+            return ', '.join(sorted([tag.name for tag in self.data], reverse=True))
         return ''
 
     def get_tags_from_string(self, tag_string):
@@ -105,8 +105,7 @@ class PostForm(FlaskForm):
         coerce=int
     )
     tags = TagField('Теги:',
-                    render_kw={"placeholder": "Введите теги, разделяя их запятой",
-                                        })
+                    render_kw={"placeholder": "Введите теги, разделяя их запятой"})
 
 
 class CommentForm(FlaskForm):

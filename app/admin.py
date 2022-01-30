@@ -12,7 +12,7 @@ from flask_login import current_user
 from wtforms.fields import PasswordField, SelectField
 
 from app import db
-from .models import Permission, Role, User, Post
+from .models import Permission, Role, User, Post, Tag, post_tags
 
 import warnings
 
@@ -27,7 +27,8 @@ class IndexView(RestrictedAccess, AdminIndexView):
         return False
 
 
-app_admin = Admin(name='Admin dashboard', index_view=IndexView())
+app_admin = Admin(name='Панель Администратора', index_view=IndexView())
+
 
 
 def add_admin_views(app_instance):
@@ -47,7 +48,7 @@ def add_admin_views(app_instance):
             if template == 'admin/role.html':
                 kwargs['perms'] = Permission.get_attr(Permission)
             return super(RoleModelView, self).render(template, **kwargs)
-
+        # Adds information about permissions
         list_template = 'admin/role.html'
         column_list = ['name', 'permissions']
         column_labels = {
@@ -148,6 +149,7 @@ def add_admin_views(app_instance):
             if name == 'title':
                 return Markup(model.title)
             if name == 'body':
+                print(Markup(model.body))
                 return Markup(model.body)[:200]
 
         _status_choices = [(choice, label) for choice, label in [
@@ -155,6 +157,8 @@ def add_admin_views(app_instance):
             (Post.STATUS_DRAFT, 'Draft'),
             (Post.STATUS_DELETED, 'Deleted'),
         ]]
+        # Restricts col's height by 8em
+        list_template = 'admin/post.html'
 
         column_choices = {
             'status': _status_choices,
@@ -214,6 +218,38 @@ def add_admin_views(app_instance):
             },
         }
 
+    class TagModelView(RestrictedAccess, ModelView):
+        def render(self, template, **kwargs):
+            if template == 'admin/tag.html':
+                kwargs['tags'] = Tag.query.all()
+            return super(TagModelView, self).render(template, **kwargs)
+        # Adds notification for tags with no posts associated
+        list_template = 'admin/tag.html'
+        column_list = ['id', 'name', 'tags_count']
+        column_labels = {
+            'id': 'Порядковый номер',
+            'name': 'Название тега',
+            'tags_count': 'Количество записей с этим тегом',
+        }
+        column_sortable_list = (
+            'id', 'name'
+        )
+        column_filters = [
+            'name'
+        ]
+        column_searchable_list = [
+            'name'
+        ]
+        form_widget_args = {
+            'slug': {
+                'disabled': True
+            },
+        }
+
+
+        def on_model_change(self, form, model, is_created):
+            model.generate_slug()
+
     class StaticFileAdmin(RestrictedAccess, FileAdmin):
         def is_accessible(self):
             return current_user.is_authenticated and current_user.is_administrator
@@ -226,6 +262,7 @@ def add_admin_views(app_instance):
         warnings.filterwarnings('ignore', 'Fields missing from ruleset', UserWarning)
         app_admin.add_view(UserModelView(User, db.session, name='Пользователи'))
     app_admin.add_view(PostModelView(Post, db.session, name='Записи'))
+    app_admin.add_view(TagModelView(Tag, db.session, name='Теги'))
     app_admin.add_view(StaticFileAdmin(
         app_instance.config['STATIC_DIR'], '/static/', name='Cтатические файлы'))
     app_admin.add_view(UploadFileAdmin(

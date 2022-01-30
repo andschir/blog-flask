@@ -9,7 +9,7 @@ from flask_login import UserMixin, AnonymousUserMixin
 from . import db, login_manager
 from slugify import slugify
 
-
+from sqlalchemy import select, func
 class Permission:
     FOLLOW = 1
     COMMENT = 2
@@ -363,6 +363,20 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
     slug = db.Column(db.String(64), unique=True)
+
+    # from sqlalchemy.ext.hybrid import hybrid_property
+    @property
+    def tags_count(self):
+        return self.posts.count()
+
+    # @tags_count.expression
+    # def tags_count(cls):
+    #     return select([func.count(Tag.id)]).where(Tag.posts.count() == 0).label('tags count')
+
+    def generate_slug(self):
+        self.slug = ''
+        if self.name:
+            self.slug = slugify(self.name, max_length=60, word_boundary=True)
 
     def __init__(self, *args, **kwargs):
         super(Tag, self).__init__(*args, **kwargs)

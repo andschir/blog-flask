@@ -5,9 +5,9 @@
 {% block title %}Тег: {{ tag.name }}{% endblock %}
 
 {% block page_content %}
-{% if posts.count() != 0 %}
+{% if posts|length != 0 %}
   <div class="page-header">
-    <h4>Посты по тегу <span class="fw-light fst-italic">{{ tag.name }}</span></h4>
+    <h4>Посты по тегу <span class="fw-light fst-italic">«{{ tag.name }}»</span></h4>
   </div>
   <div>
     {% set active_page = 'index' %}

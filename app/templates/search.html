@@ -7,18 +7,30 @@
 {% block page_content %}
 <div class="page-header">
     <h1>
-        Поиск
+        Поиск {% if posts %} записей {% elif tags %} тегов {% endif %}
     </h1>
     <p>
         По запросу «{{ search }}».
-        Результатов найдено: {{ posts_count }}
+        Результатов найдено: {% if posts %} {{ posts|length }} {% elif tags %} {{ tags|length }} {% endif %}
     </p>
 </div>
-<div class="post-tabs">
-    {% set active_page = 'index' %}
-    {% set showhide = 'hide' %}
-    {% include '_posts.html' %}
-</div>
+
+{% if posts %}
+  <div class="post-tabs">
+      {% set active_page = 'index' %}
+      {% set showhide = 'hide' %}
+      {% include '_posts.html' %}
+  </div>
+{% elif tags %}
+  <div>
+    {% for tag in tags | sort(attribute="name") %}
+      <div>
+        <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a> ({{ tag.posts.count() }})
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
 {% if pagination %}
 <div class="pagination">
     {{ macros.pagination_widget(pagination, '.index') }}

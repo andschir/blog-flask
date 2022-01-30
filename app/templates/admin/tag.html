@@ -1,0 +1,18 @@
+{% extends 'admin/model/list.html' %}
+{% block body %}
+    {{ super() }}
+    <left>
+        {% set posts_with_no_tags = namespace(value=0) %}
+        {% for tag in tags %}
+            {% if tag.posts.all()|length == 0 %}
+                {% set posts_with_no_tags.value = posts_with_no_tags.value + 1 %}
+            {% endif %}
+        {% endfor %}
+        {% if posts_with_no_tags.value > 0 %}
+            <h4>Есть теги, с которыми не ассоциирована ни одна запись. Всего: {{ posts_with_no_tags.value }}</h4>
+            {% for tag in tags %}
+                <p>{% if tag.posts.all()|length == 0 %} {{ tag.name }} {% endif %} </p>
+            {% endfor %}
+        {% endif %}
+    </left>
+{% endblock %}

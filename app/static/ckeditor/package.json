@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@andschir/ckeditor5-build-classic-flask": "^1.0.5"
+    "@andschir/ckeditor5-build-classic-flask": "^1.0.6"
   }
 }
