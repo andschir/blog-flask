@@ -13,7 +13,7 @@
   <form class="d-flex" role="search" method="GET" action="{{ url_for('main.search') }}">
     <div class="input-group mb-3">
       <button type="submit" class="btn btn-outline-secondary">Поиск</button>
-      <input required class="form-control" type="search" name="t" id="tags"
+      <input required class="form-control" type="search" name="t"
              value="{{ request.args.get('t', '') }}" aria-label="Search">
     </div>
   </form>
@@ -22,15 +22,17 @@
 <div class="page-header">
   <h5>Все теги:</h5>
 </div>
+
 <ul>
-  {% for tag in tags %}
-    <div>
-      <li>
-        <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a> ({{ tag.posts.count() }})
-      </li>
-    </div>
+  {% for tag in tags|sort(attribute='tags_count', reverse=True) %}
+    {% if tag.posts.count() > 0 %}
+    <li>
+      <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a> ({{ tag.posts.count() }})
+    </li>
+    {% endif %}
   {% endfor %}
 </ul>
+
 {% if pagination %}
 <div class="pagination">
   {{ macros.pagination_widget(pagination, '.index') }}

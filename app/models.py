@@ -4,12 +4,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from markdown import markdown
 import bleach
-from flask import current_app, request
+from flask import current_app
 from flask_login import UserMixin, AnonymousUserMixin
 from . import db, login_manager
 from slugify import slugify
+from sqlalchemy.ext.hybrid import hybrid_property
 
-from sqlalchemy import select, func
 class Permission:
     FOLLOW = 1
     COMMENT = 2
@@ -278,7 +278,8 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     timestamp_modified = db.Column(db.DateTime, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    comments = db.relationship('Comment', backref='post', lazy='dynamic',
+                               cascade='all, delete-orphan')
     tags = db.relationship('Tag', secondary=post_tags,
                            backref=db.backref('posts', lazy='dynamic'))
 
@@ -337,12 +338,16 @@ db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 
 class Comment(db.Model):
+    STATUS_PUBLIC = 0
+    STATUS_DELETED_BY_USER = 1
+    STATUS_DISABLED_BY_MODERATOR = 2
+
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    disabled = db.Column(db.Boolean)
+    status = db.Column(db.SmallInteger, default=STATUS_PUBLIC)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
 
@@ -364,14 +369,13 @@ class Tag(db.Model):
     name = db.Column(db.String(64), unique=True)
     slug = db.Column(db.String(64), unique=True)
 
-    # from sqlalchemy.ext.hybrid import hybrid_property
-    @property
+    @hybrid_property
     def tags_count(self):
         return self.posts.count()
 
-    # @tags_count.expression
-    # def tags_count(cls):
-    #     return select([func.count(Tag.id)]).where(Tag.posts.count() == 0).label('tags count')
+    @tags_count.expression
+    def tags_count(cls):
+        return db.select([db.func.count(post_tags.c.post_id)]).where(post_tags.c.tag_id == cls.id)
 
     def generate_slug(self):
         self.slug = ''

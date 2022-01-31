@@ -7,13 +7,16 @@
             </a>
         </div>
         <div class="comment-content">
-            <div class="comment-date">{{ moment(comment.timestamp).fromNow() }}</div>
+            <div class="fw-light fst-italic comment-date">{{ comment.timestamp.strftime('%H:%M:%S, %d %B %Y') }}</div>
             <div class="comment-author"><a href="{{ url_for('.user', username=comment.author.username) }}">{{ comment.author.username }}</a></div>
             <div class="comment-body">
-                {% if comment.disabled %}
-                <p><i>This comment has been disabled by a moderator.</i></p>
+                {% if comment.status == comment.STATUS_DISABLED_BY_MODERATOR %}
+                    <p><i>Этот комментарий был удалён модератором.</i></p>
                 {% endif %}
-                {% if moderate or not comment.disabled %}
+                {% if comment.status == comment.STATUS_DELETED_BY_USER %}
+                    <p><i>Этот комментарий был удалён пользователем.</i></p>
+                {% endif %}
+                {% if moderate or (comment.status == comment.STATUS_PUBLIC) or (current_user == comment.author) %}
                     {% if comment.body_html %}
                         {{ comment.body_html | safe }}
                     {% else %}
@@ -23,10 +26,21 @@
             </div>
             {% if moderate %}
                 <br>
-                {% if comment.disabled %}
-                <a class="btn btn-default btn-xs" href="{{ url_for('.moderate_enable', id=comment.id, page=page) }}">Enable</a>
+                {% if (comment.status == comment.STATUS_DISABLED_BY_MODERATOR) or (comment.status == comment.STATUS_DELETED_BY_USER) %}
+                <a class="btn btn-success btn-xs" href="{{ url_for('.moderate_enable', id=comment.id, page=page) }}">Восстановить [АДМИН]</a>
                 {% else %}
-                <a class="btn btn-danger btn-xs" href="{{ url_for('.moderate_disable', id=comment.id, page=page) }}">Disable</a>
+                <a class="btn btn-danger btn-xs" href="{{ url_for('.moderate_disable', id=comment.id, page=page) }}">Удалить [АДМИН]</a>
+                {% endif %}
+                <a href="{{ url_for('.post', id=comment.post_id) }}" style="float: right;">
+                    <span>Открыть запись</span>
+                </a>
+            {% endif %}
+            {% if (current_user == comment.author) and not moderate %}
+            <br>
+                {% if comment.status == comment.STATUS_DELETED_BY_USER %}
+                <a class="btn btn-success btn-xs" href="{{ url_for('.moderate_enable_user', id=comment.id, page=page) }}">Восстановить</a>
+                {% elif comment.status == comment.STATUS_PUBLIC %}
+                <a class="btn btn-danger btn-xs" href="{{ url_for('.moderate_disable_user', id=comment.id, page=page) }}">Удалить</a>
                 {% endif %}
             {% endif %}
         </div>

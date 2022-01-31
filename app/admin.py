@@ -12,7 +12,7 @@ from flask_login import current_user
 from wtforms.fields import PasswordField, SelectField
 
 from app import db
-from .models import Permission, Role, User, Post, Tag, post_tags
+from .models import Permission, Role, User, Post, Tag, Comment
 
 import warnings
 
@@ -153,9 +153,9 @@ def add_admin_views(app_instance):
                 return Markup(model.body)[:200]
 
         _status_choices = [(choice, label) for choice, label in [
-            (Post.STATUS_PUBLIC, 'Public'),
-            (Post.STATUS_DRAFT, 'Draft'),
-            (Post.STATUS_DELETED, 'Deleted'),
+            (Post.STATUS_PUBLIC, 'Опубликовано'),
+            (Post.STATUS_DRAFT, 'Черновик'),
+            (Post.STATUS_DELETED, 'Удалено'),
         ]]
         # Restricts col's height by 8em
         list_template = 'admin/post.html'
@@ -182,6 +182,7 @@ def add_admin_views(app_instance):
         column_default_sort = ('id', True)
         column_labels = {
             'id': 'Порядковый номер',
+            'status': 'Статус',
             'timestamp': 'Дата создания',
             'timestamp_modified': 'Дата изменения',
             'author.username': 'Автор',
@@ -232,7 +233,7 @@ def add_admin_views(app_instance):
             'tags_count': 'Количество записей с этим тегом',
         }
         column_sortable_list = (
-            'id', 'name'
+            'id', 'name', 'tags_count'
         )
         column_filters = [
             'name'
@@ -250,6 +251,69 @@ def add_admin_views(app_instance):
         def on_model_change(self, form, model, is_created):
             model.generate_slug()
 
+    class CommentModelView(RestrictedAccess, ModelView):
+        def _post_id_formatter(view, context, model, name):
+            if name == 'post_id':
+                    edit_url = url_for('main.post', id=model.post_id)
+                    html = '''<p>{post_id}</p>
+                    <a href="{url}">
+                        <span class="label label-default">Открыть запись</span>                        
+                    </a>
+                    '''.format(post_id=model.post_id, url=edit_url)
+
+                    return Markup(html)
+
+        _status_choices = [(choice, label) for choice, label in [
+            (Comment.STATUS_PUBLIC, 'Опубликовано'),
+            (Comment.STATUS_DELETED_BY_USER, 'Удалено пользователем'),
+            (Comment.STATUS_DISABLED_BY_MODERATOR, 'Удалено модератором'),
+        ]]
+
+        column_type_formatters = MY_DEFAULT_FORMATTERS
+        can_create = False
+        column_list = ['id', 'author.username', 'post_id', 'body', 'timestamp', 'status']
+        column_labels = {
+            'id': 'Порядковый номер',
+            'author.username': 'Автор',
+            'post_id': 'Номер связанной записи',
+            'body': 'Текст',
+            'timestamp': 'Дата создания',
+            'status': 'Статус',
+        }
+        column_choices = {
+            'status': _status_choices,
+        }
+        column_sortable_list = (
+            'id', 'author.username', 'post_id', 'timestamp', 'status'
+        )
+        column_filters = [
+            'author.username', 'post_id', 'body', 'timestamp', 'status'
+        ]
+        column_searchable_list = [
+            'author.username', 'post_id',
+        ]
+        column_formatters = {
+            'post_id': _post_id_formatter,
+        }
+        form_overrides = {'status': SelectField}
+        form_args = {
+            'status': {
+                'choices': _status_choices,
+                'coerce': int
+            }
+        }
+        form_widget_args = {
+            'timestamp': {
+                'disabled': True
+            },
+        }
+        form_ajax_refs = {
+            'author': {
+                'fields': (User.username, User.email),
+                'page-size': 10,
+            },
+        }
+
     class StaticFileAdmin(RestrictedAccess, FileAdmin):
         def is_accessible(self):
             return current_user.is_authenticated and current_user.is_administrator
@@ -263,6 +327,7 @@ def add_admin_views(app_instance):
         app_admin.add_view(UserModelView(User, db.session, name='Пользователи'))
     app_admin.add_view(PostModelView(Post, db.session, name='Записи'))
     app_admin.add_view(TagModelView(Tag, db.session, name='Теги'))
+    app_admin.add_view(CommentModelView(Comment, db.session, name='Комментарии'))
     app_admin.add_view(StaticFileAdmin(
         app_instance.config['STATIC_DIR'], '/static/', name='Cтатические файлы'))
     app_admin.add_view(UploadFileAdmin(

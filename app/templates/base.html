@@ -13,10 +13,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.0/jquery-ui.min.js"></script>
 <script src="/static/scripts/search_checkbox_menu.js"></script>
-<script>
-  $SCRIPT_ROOT = {{ request.script_root|tojson }};
-</script>
-<script src="/static/scripts/autocomplete.js"></script>
 {% endblock %}
 
 {% block navbar %}
@@ -105,7 +101,7 @@
           </ul>
         </li>
         {% else %}
-        <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+        <li><a class="nav-link" href="{{ url_for('auth.login') }}">Войти</a></li>
         {% endif %}
       </ul>
     </div>

@@ -363,7 +363,7 @@ def moderate():
 @permission_required(Permission.MODERATE)
 def moderate_enable(id):
     comment = Comment.query.get_or_404(id)
-    comment.disabled = False
+    comment.status = comment.STATUS_PUBLIC
     db.session.add(comment)
     db.session.commit()
     return redirect(url_for('.moderate',
@@ -375,11 +375,37 @@ def moderate_enable(id):
 @permission_required(Permission.MODERATE)
 def moderate_disable(id):
     comment = Comment.query.get_or_404(id)
-    comment.disabled = True
+    comment.status = comment.STATUS_DISABLED_BY_MODERATOR
     db.session.add(comment)
     db.session.commit()
     return redirect(url_for('.moderate',
                             page=request.args.get('page', 1, type=int)))
+
+
+@main.route('/moderate/enable_user/<int:id>')
+@login_required
+def moderate_enable_user(id):
+    comment = Comment.query.get_or_404(id)
+    if current_user != comment.author:
+        abort(403)
+    comment.status = comment.STATUS_PUBLIC
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for('.post',
+                            id=comment.post_id))
+
+
+@main.route('/moderate/disable_user/<int:id>')
+@login_required
+def moderate_disable_user(id):
+    comment = Comment.query.get_or_404(id)
+    if current_user != comment.author:
+        abort(403)
+    comment.status = comment.STATUS_DELETED_BY_USER
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for('.post',
+                            id=comment.post_id))
                             
 
 @main.route('/files/<path:filename>')
@@ -405,6 +431,7 @@ def upload():
 @main.route('/autocomplete', methods=['GET'])
 def autocomplete():
     search = request.args.get('autocomplete')
-    query = db.session.query(Tag.name).filter(Tag.name.like('%' + str(search) + '%'))
+    query = db.session.query(Tag.name).\
+        filter(Tag.name.like('%' + str(search.split(',')[-1].strip()) + '%'))
     results = [i[0] for i in query.all()]
     return jsonify(json_list=results)
