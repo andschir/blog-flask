@@ -15,6 +15,13 @@
                     shouldNotGroupWhenFull: true
                 }
             } )
+            .then(editor => {
+                editor.model.document.on('change', () => {
+                  if (countCharacters(editor.model.document) > 0) {
+                    document.querySelector('#title_empty').innerText = ''
+                  }
+                });
+            })
             .catch( error => {
                 console.error( error );
             } );
@@ -28,7 +35,59 @@
                 },
                 mediaEmbed: {previewsInData: true}
             } )
+            .then(editor => {
+                editor.model.document.on('change', () => {
+                  if (countCharacters(editor.model.document) > 0) {
+                    document.querySelector('#body_empty').innerText = ''
+                  }
+                });
+            })
             .catch( error => {
                 console.error( error.stack );
             } );
+    </script>
+    <script>
+        function countCharacters(document) {
+          const rootElement = document.getRoot();
+          return countCharactersInElement(rootElement);
+
+          function countCharactersInElement(node) {
+            let chars = 0;
+
+            for (const child of node.getChildren()) {
+              if (child.is('text')) {
+                chars += child.data.length;
+              } else if (child.is('element')) {
+                chars += countCharactersInElement(child);
+              }
+            }
+            console.log(chars);
+            return chars;
+          }
+        }
+    </script>
+    <script>
+        $(".form").submit(function(e) {
+            var content = $('#body').val();
+            html = $(content).text();
+            if ($.trim(html) == '') {
+                e.preventDefault();
+                $.ajax({
+                    success: function(data) {
+                        $('#body_empty').html('Пустое поле, введите текст!');
+                    }
+                });
+            }
+
+            var content = $('#title').val();
+            html = $(content).text();
+            if ($.trim(html) == '') {
+                e.preventDefault();
+                $.ajax({
+                    success: function(data) {
+                        $('#title_empty').html('Пустое поле, введите заголовок!');
+                    }
+                });
+            }
+        });
     </script>

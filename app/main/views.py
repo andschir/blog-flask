@@ -12,6 +12,10 @@ import os
 from flask import send_from_directory
 from flask_ckeditor import upload_success, upload_fail
 
+from werkzeug.exceptions import RequestEntityTooLarge
+import uuid
+
+
 @main.route('/', methods=['GET', 'POST'])
 def index():
     page = request.args.get('page', 1, type=int)
@@ -90,6 +94,7 @@ def post(id):
 
 
 @main.route('/create', methods=['GET', 'POST'])
+@login_required
 def create():
     form = PostForm()
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
@@ -345,19 +350,6 @@ def show_followed():
     return resp
 
 
-@main.route('/moderate')
-@login_required
-@permission_required(Permission.MODERATE)
-def moderate():
-    page = request.args.get('page', 1, type=int)
-    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
-        page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
-        error_out=False)
-    comments = pagination.items
-    return render_template('moderate.html', comments=comments,
-                           pagination=pagination, page=page)
-
-
 @main.route('/moderate/enable/<int:id>')
 @login_required
 @permission_required(Permission.MODERATE)
@@ -366,8 +358,7 @@ def moderate_enable(id):
     comment.status = comment.STATUS_PUBLIC
     db.session.add(comment)
     db.session.commit()
-    return redirect(url_for('.moderate',
-                            page=request.args.get('page', 1, type=int)))
+    return redirect(url_for('.post', id=comment.post.id))
 
 
 @main.route('/moderate/disable/<int:id>')
@@ -378,8 +369,7 @@ def moderate_disable(id):
     comment.status = comment.STATUS_DISABLED_BY_MODERATOR
     db.session.add(comment)
     db.session.commit()
-    return redirect(url_for('.moderate',
-                            page=request.args.get('page', 1, type=int)))
+    return redirect(url_for('.post', id=comment.post.id))
 
 
 @main.route('/moderate/enable_user/<int:id>')
@@ -418,11 +408,13 @@ def uploaded_files(filename):
 @main.route('/upload', methods=['POST'])
 def upload():
     app = current_app._get_current_object()
-    f = request.files.get('upload')
-    # Add more validations here
+    try:
+        f = request.files.get('upload')
+    except RequestEntityTooLarge:
+        return upload_fail(message='Размер файла слишком большой!')
     extension = f.filename.split('.')[-1].lower()
-    if extension not in ['jpg', 'gif', 'png', 'jpeg']:
-        return upload_fail(message='Image only!')
+    # make unique filename
+    f.filename = f.filename.split('.')[0] + '_' + uuid.uuid4().hex + '.' + f.filename.split('.')[-1]
     f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
     url = url_for('main.uploaded_files', filename=f.filename)
     return jsonify(url=url)

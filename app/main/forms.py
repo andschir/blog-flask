@@ -1,37 +1,30 @@
 from flask_wtf import FlaskForm
-# from flask_ckeditor import CKEditorField
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
 from ..models import Role, User, Post, Tag
 
 
-class NameForm(FlaskForm):
-    name = StringField('What is your name?', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
-
 class EditProfileForm(FlaskForm):
-    name = StringField('Real name', validators=[Length(0, 64)])
-    location = StringField('Location', validators=[Length(0, 64)])
-    about_me = TextAreaField('About me')
-    submit = SubmitField('Submit')
+    name = StringField('Реальное имя', validators=[Length(0, 64)])
+    location = StringField('Локация', validators=[Length(0, 64)])
+    about_me = TextAreaField('Обо мне')
+    submit = SubmitField('Подтвердить')
 
 
 class EditProfileAdminForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(1, 64),
                                              Email()])
-    username = StringField('Username', validators=[
+    username = StringField('Имя пользователя', validators=[
         DataRequired(), Length(1, 64),
         Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-               'Usernames must have only letters, numbers, dots or '
-               'underscores')])
-    confirmed = BooleanField('Confirmed')
-    role = SelectField('Role', coerce=int)
-    name = StringField('Real name', validators=[Length(0, 64)])
-    location = StringField('Location', validators=[Length(0, 64)])
-    about_me = TextAreaField('About me')
-    submit = SubmitField('Submit')
+               'Имя пользователя должно содержать только буквы, цифры, точки или нижние подчеркивания')])
+    confirmed = BooleanField('Подтвержден')
+    role = SelectField('Роль', coerce=int)
+    name = StringField('Реальное имя', validators=[Length(0, 64)])
+    location = StringField('Локация', validators=[Length(0, 64)])
+    about_me = TextAreaField('Обо мне')
+    submit = SubmitField('Подтвердить')
 
     def __init__(self, user, *args, **kwargs):
         super(EditProfileAdminForm, self).__init__(*args, **kwargs)
@@ -42,27 +35,12 @@ class EditProfileAdminForm(FlaskForm):
     def validate_email(self, field):
         if field.data != self.user.email and \
                 User.query.filter_by(email=field.data).first():
-            raise ValidationError('Email already registered.')
+            raise ValidationError('Почтовый адрес уже зарегистрирован')
 
     def validate_username(self, field):
         if field.data != self.user.username and \
                 User.query.filter_by(username=field.data).first():
-            raise ValidationError('Username already in use.')
-
-
-from wtforms import TextAreaField
-from wtforms.widgets import TextArea
-
-
-class CKEditor(TextArea):
-    def __call__(self, field, **kwargs):
-        c = kwargs.pop('class', '') or kwargs.pop('class_', '')
-        kwargs['class'] = u'%s %s' % ('ckeditor', c)
-        return super(CKEditor, self).__call__(field, **kwargs)
-
-
-class CKEditorField(TextAreaField):
-    widget = CKEditor()
+            raise ValidationError('Пользователь с таки именем уже существует')
 
 
 class TagField(StringField):
@@ -93,7 +71,7 @@ class TagField(StringField):
 
 
 class PostForm(FlaskForm):
-    title = CKEditorField('Заголовок')
+    title = TextAreaField('Заголовок')
     body = TextAreaField('Текст')
     submit = SubmitField('Создать')
     status = SelectField(

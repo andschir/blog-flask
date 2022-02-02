@@ -21,7 +21,8 @@ class Config:
     STATIC_DIR = os.path.join(basedir, 'app/static')
     UPLOADS_DIR = os.path.join(basedir, 'uploads')
 
-    UPLOADED_PATH = os.path.join(basedir, 'uploads')
+    MAX_CONTENT_LENGTH = 20 * 1024 * 1024
+    UPLOADED_PATH = os.path.join(basedir, 'uploads/img/')
 
     SSL_REDIRECT = False
     

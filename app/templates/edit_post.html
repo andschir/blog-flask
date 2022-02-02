@@ -24,11 +24,13 @@
       <div class="">
         {{ form.title }}
       </div>
+      <div id="title_empty"></div>
     </div>
     <div class="row mx-auto mt-3">
       <h3>{{ form.body.label(class='control-label') }}</h3>
       <div class="">
         {{ form.body }}
+        <div id="body_empty"></div>
       </div>
     </div>
     {% include '_cke_config.html' %}

@@ -6,6 +6,7 @@
 
 {% block page_content %}
 <div class="page-header">
+  <a id="#top"></a>
   <h4>Hello,
     {% if current_user.is_authenticated %}
     {{ current_user.username }}
@@ -30,6 +31,7 @@
   {% set showhide = 'hide' %}
   {% include '_posts.html' %}
 </div>
+<a href="#top">Go To Top</a>
 {% if pagination %}
 <div class="pagination">
   {{ macros.pagination_widget(pagination, '.index') }}

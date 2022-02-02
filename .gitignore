@@ -43,3 +43,6 @@ venv
 
 # Environment files
 .env
+
+# Uploads folder
+uploads/*

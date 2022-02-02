@@ -1,4 +1,5 @@
 <script src="/static/scripts/showhide.js"></script>
+<script src="/static/scripts/add_showhide.js"></script>
 <ul class="posts mt-0 border-top-0">
   {% for post in posts %}
   <li class="post">
@@ -25,7 +26,9 @@
           <span>
             {% set tags_sorted = post.tags|sort(attribute='name', reverse=True) %}
             {% for tag in tags_sorted %}
-            <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">{{ tag.name }}</a>{% if tag != tags_sorted[-1] %},{% endif %}
+              <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">
+                {{ tag.name }}</a>
+              {% if tag != tags_sorted[-1] %},{% endif %}
             {% endfor %}
           </span>
         </div>
@@ -38,9 +41,9 @@
         <div class='post-body-sizer'>
           <div class='post-body-realsize'>
             {% if post.body_html %}
-            {{ (post.body_html | safe) }}
+              {{ (post.body_html | safe) }}
             {% else %}
-            {{ post.body }}
+              {{ post.body }}
             {% endif %}
           </div>
         </div>
@@ -66,36 +69,36 @@
             {% if current_user == post.author %}
             {% if post.status == post.STATUS_DELETED %}
             <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-secondary">Восстановить</button>
+              <button type="submit" class="post-button btn-sm btn-secondary">Восстановить</button>
             </form>
             {% else %}
             <form method="get" action="{{ url_for('main.edit', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-secondary">Редактировать</button>
+              <button type="submit" class="post-button btn-sm btn-secondary">Редактировать</button>
             </form>
             <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-danger">Удалить</button>
+              <button type="submit" class="post-button btn-sm btn-danger">Удалить</button>
             </form>
             {% if post.status == post.STATUS_DRAFT %}
             <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-success">Опубликовать</button>
+              <button type="submit" class="post-button btn-sm btn-success">Опубликовать</button>
             </form>
             {% endif %}
             {% endif %}
-            {% elif current_user.is_administrator() %}
+            {% elif current_user.can(Permission.ADMIN) %}
             {% if post.status == post.STATUS_DELETED %}
             <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-secondary">Восстановить [АДМИН]</button>
+              <button type="submit" class="post-button btn-sm btn-secondary">Восстановить [АДМИН]</button>
             </form>
             {% else %}
             <form method="get" action="{{ url_for('main.edit', id=post.id, edit_as_admin=True) }}">
-              <button type="submit" class="post-button btn btn-secondary">Редактировать [АДМИН]</button>
+              <button type="submit" class="post-button btn-sm btn-secondary">Редактировать [АДМИН]</button>
             </form>
             <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-danger">Удалить [АДМИН]</button>
+              <button type="submit" class="post-button btn-sm btn-danger">Удалить [АДМИН]</button>
             </form>
             {% if post.status == post.STATUS_DRAFT %}
             <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-              <button type="submit" class="post-button btn btn-success">Опубликовать [АДМИН]</button>
+              <button type="submit" class="post-button btn-sm btn-success">Опубликовать [АДМИН]</button>
             </form>
             {% endif %}
             {% endif %}
@@ -119,6 +122,5 @@
     </div>
   </li>
   {% endfor %}
-  <script src="/static/scripts/add_showhide.js"></script>
 </ul>
 

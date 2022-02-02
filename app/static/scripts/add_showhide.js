@@ -1,4 +1,4 @@
-function check() {
+$(document).ready(function(){
     var em = parseFloat(getComputedStyle($(".post-body div").parent()[0]).fontSize);
     var divheight = $(".post-body div").children().parent()[0].clientHeight/em;
     var divs = document.querySelectorAll('div.post-body-realsize');
@@ -9,5 +9,4 @@ function check() {
             showhides[divnumber].children[0].text = 'Показать полностью';
         }
     });
-}
-document.addEventListener("DOMContentLoaded", check);
+});
