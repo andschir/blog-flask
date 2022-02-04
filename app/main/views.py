@@ -1,3 +1,5 @@
+import io
+
 from flask import render_template, redirect, url_for, abort, flash, request,\
     current_app, make_response, jsonify
 from flask_login import login_required, current_user
@@ -14,6 +16,36 @@ from flask_ckeditor import upload_success, upload_fail
 
 from werkzeug.exceptions import RequestEntityTooLarge
 import uuid
+from PIL import Image, ImageDraw, ImageFont
+
+
+def add_copyright(response, filepath, fontpath, ext):
+    photo = Image.open(response)
+    w, h = photo.size
+    ratio = w / h
+    copy_width = 13
+    text = 'Blitzschnee'
+    drawing = ImageDraw.Draw(photo)
+
+    for font_size in range(w, 0, -1):
+        font = ImageFont.truetype(fontpath, font_size)
+        text_w, text_h = drawing.textsize(text, font)
+        if text_w <= w:
+            break
+
+    copy_image = Image.new('RGBA', (w, h))
+    copy_drawing = ImageDraw.Draw(copy_image)
+    copy_drawing.text((0, 0), text, font=font)
+
+    copy_image = copy_image.resize((int(w * copy_width / 100), int(w * copy_width / 100 / ratio)),
+                                   resample=Image.HAMMING)
+
+    text_w, text_h = copy_image.size
+    position = w - text_w - int(w * 0.05), h - text_h
+
+    photo.paste(copy_image, position, copy_image.convert('RGBA'))
+
+    photo.save(filepath, format=ext.upper(), subsampling=0, quality='web_maximum')
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -79,7 +111,7 @@ def post(id):
                           author=current_user._get_current_object())
         db.session.add(comment)
         db.session.commit()
-        flash('Ваш комментарий успешно опубликован')
+        flash('Ваш комментарий успешно опубликован', 'alert_success')
         return redirect(url_for('.post', id=post.id, page=-1))
     page = request.args.get('page', 1, type=int)
     if page == -1:
@@ -105,7 +137,8 @@ def create():
                     tags=form.tags.data)
         db.session.add(post)
         db.session.commit()
-        return redirect(url_for('.index'))
+        flash('Запись успешно создана', 'alert_success')
+        return redirect(url_for('.post', id=post.id))
     return render_template('create.html', form=form, active_create='active')
 
 
@@ -125,7 +158,7 @@ def edit(id):
         post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
-        flash('Запись успешно отредактирована')
+        flash('Запись успешно отредактирована', 'alert_success')
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title
     form.body.data = post.body
@@ -145,7 +178,7 @@ def delete(id):
         post.status = Post.STATUS_DELETED
         db.session.add(post)
         db.session.commit()
-        flash('Запись успешно удалена')
+        flash('Запись успешно удалена', 'alert_success')
         return redirect(url_for('.index'))
 
 
@@ -160,7 +193,7 @@ def recover(id):
         post.status = Post.STATUS_DRAFT
         db.session.add(post)
         db.session.commit()
-        flash('Запись успешно восстановлена')
+        flash('Запись успешно восстановлена', 'alert_success')
         return redirect(url_for('.index'))
 
 
@@ -176,7 +209,7 @@ def publish(id):
         post.refresh_timestamp()
         db.session.add(post)
         db.session.commit()
-        flash('Запись успешно опубликована')
+        flash('Запись успешно опубликована', 'alert_success')
         return redirect(url_for('.index'))
 
 
@@ -230,7 +263,7 @@ def edit_profile():
         current_user.about_me = form.about_me.data
         db.session.add(current_user._get_current_object())
         db.session.commit()
-        flash('Ваш профиль успешно обновлен')
+        flash('Ваш профиль успешно обновлен', 'alert_success')
         return redirect(url_for('.user', username=current_user.username))
     form.name.data = current_user.name
     form.location.data = current_user.location
@@ -254,7 +287,7 @@ def edit_profile_admin(id):
         user.about_me = form.about_me.data
         db.session.add(user)
         db.session.commit()
-        flash('Профиль пользователя успешно обновлен')
+        flash('Профиль пользователя успешно обновлен', 'alert_success')
         return redirect(url_for('.user', username=user.username))
     form.email.data = user.email
     form.username.data = user.username
@@ -272,14 +305,14 @@ def edit_profile_admin(id):
 def follow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Несуществующий пользователь')
+        flash('Несуществующий пользователь', 'alert_error')
         return redirect(url_for('.index'))
     if current_user.is_following(user):
-        flash('Вы уже подписаны на этого пользователя!')
+        flash('Вы уже подписаны на этого пользователя!', 'alert_error')
         return redirect(url_for('.user', username=username))
     current_user.follow(user)
     db.session.commit()
-    flash('Вы теперь подписаны на %s' % username)
+    flash('Вы теперь подписаны на %s' % username, 'alert_success')
     return redirect(url_for('.user', username=username))
 
 
@@ -289,14 +322,14 @@ def follow(username):
 def unfollow(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Несуществующий пользователь')
+        flash('Несуществующий пользователь', 'alert_error')
         return redirect(url_for('.index'))
     if not current_user.is_following(user):
-        flash('Вы не подписаны на этого пользователя')
+        flash('Вы не подписаны на этого пользователя', 'alert_error')
         return redirect(url_for('.user', username=username))
     current_user.unfollow(user)
     db.session.commit()
-    flash('Вы больше не подписаны на %s' % username)
+    flash('Вы больше не подписаны на %s' % username, 'alert_success')
     return redirect(url_for('.user', username=username))
 
 
@@ -304,7 +337,7 @@ def unfollow(username):
 def followers(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Несуществующий пользователь')
+        flash('Несуществующий пользователь', 'alert_error')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.paginate(
@@ -321,7 +354,7 @@ def followers(username):
 def followed_by(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
-        flash('Несуществующий пользователь')
+        flash('Несуществующий пользователь', 'alert_error')
         return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followed.paginate(
@@ -358,6 +391,7 @@ def moderate_enable(id):
     comment.status = comment.STATUS_PUBLIC
     db.session.add(comment)
     db.session.commit()
+    flash('Комментарий восстановлен', 'alert_success')
     return redirect(url_for('.post', id=comment.post.id))
 
 
@@ -369,6 +403,7 @@ def moderate_disable(id):
     comment.status = comment.STATUS_DISABLED_BY_MODERATOR
     db.session.add(comment)
     db.session.commit()
+    flash('Комментарий скрыт', 'alert_success')
     return redirect(url_for('.post', id=comment.post.id))
 
 
@@ -381,6 +416,7 @@ def moderate_enable_user(id):
     comment.status = comment.STATUS_PUBLIC
     db.session.add(comment)
     db.session.commit()
+    flash('Комментарий восстановлен', 'alert_success')
     return redirect(url_for('.post',
                             id=comment.post_id))
 
@@ -394,28 +430,37 @@ def moderate_disable_user(id):
     comment.status = comment.STATUS_DELETED_BY_USER
     db.session.add(comment)
     db.session.commit()
+    flash('Комментарий скрыт', 'alert_success')
     return redirect(url_for('.post',
                             id=comment.post_id))
-                            
+
 
 @main.route('/files/<path:filename>')
 def uploaded_files(filename):
     app = current_app._get_current_object()
-    path = app.config['UPLOADED_PATH']
+    path = app.config['UPLOADED_PATH_IMAGES']
     return send_from_directory(path, filename)
 
 
 @main.route('/upload', methods=['POST'])
 def upload():
     app = current_app._get_current_object()
+
     try:
         f = request.files.get('upload')
     except RequestEntityTooLarge:
         return upload_fail(message='Размер файла слишком большой!')
+
     extension = f.filename.split('.')[-1].lower()
     # make unique filename
-    f.filename = f.filename.split('.')[0] + '_' + uuid.uuid4().hex + '.' + f.filename.split('.')[-1]
-    f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
+    f.filename = f.filename.split('.')[0] + '_' + uuid.uuid4().hex[:8] + '.' + f.filename.split('.')[-1]
+
+    filepath = os.path.join(app.config['UPLOADED_PATH_IMAGES']) + f.filename
+    fontpath = os.path.abspath(os.path.join(app.config['STATIC_DIR']) + '/fonts')
+    fontpath = fontpath + '/' + os.listdir(fontpath)[0]
+
+    add_copyright(f, filepath, fontpath, extension)
+
     url = url_for('main.uploaded_files', filename=f.filename)
     return jsonify(url=url)
 
@@ -427,3 +472,14 @@ def autocomplete():
         filter(Tag.name.like('%' + str(search.split(',')[-1].strip()) + '%'))
     results = [i[0] for i in query.all()]
     return jsonify(json_list=results)
+
+
+@main.route('/mention', methods=['GET'])
+def mention():
+    search = request.args.get('mentionString')
+    query = db.session.query(User.username) \
+        .filter(User.username.like('%' + str(search) + '%'))
+    results = [
+        {'id': name, 'username': name[1:]} for name in ['@' + i[0] for i in query.all()]
+    ]
+    return {'result': results}

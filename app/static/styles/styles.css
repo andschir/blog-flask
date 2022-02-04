@@ -255,3 +255,13 @@ input[type=search] {
 #gototop_button:hover {
     background-color: #555;
 }
+
+.alert_info{
+    background-color: #FCFFB3;
+}
+.alert_error {
+    background-color: #FFC5B9;
+}
+.alert_success {
+    background-color: #D5FFC4;
+}

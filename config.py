@@ -22,7 +22,7 @@ class Config:
     UPLOADS_DIR = os.path.join(basedir, 'uploads')
 
     MAX_CONTENT_LENGTH = 20 * 1024 * 1024
-    UPLOADED_PATH = os.path.join(basedir, 'uploads/img/')
+    UPLOADED_PATH_IMAGES = os.path.join(basedir, 'uploads/img/')
 
     SSL_REDIRECT = False
     

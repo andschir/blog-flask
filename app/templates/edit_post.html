@@ -6,8 +6,9 @@
 {% block head %}
   {{ super() }}
   <script src="/static/scripts/autocomplete.js"></script>
-  <!--    <script src="static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
+<!--      <script src="/static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
   <script src="/static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
+  <script src="/static/scripts/cke5.js"></script>
 {% endblock %}
 
 {% block page_content %}
@@ -33,7 +34,6 @@
         <div id="body_empty"></div>
       </div>
     </div>
-    {% include '_cke_config.html' %}
     <div class="row mx-auto mt-3">
         <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>
     </div>

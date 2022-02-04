@@ -1,0 +1,15 @@
+h1, h2, h3, h4, h5 {
+    font-size: 1em;
+}
+
+.profile-thumbnail {
+    width: 10px;
+}
+
+.btn-primary {
+    background-color: grey !important;
+}
+
+.btn-danger {
+    background-color: grey !important;
+}

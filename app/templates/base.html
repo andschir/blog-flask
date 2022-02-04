@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.0/themes/base/jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/content-styles.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/override.css') }}">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.0/jquery-ui.min.js"></script>
 <script src="/static/scripts/search_checkbox_menu.js"></script>
@@ -111,12 +112,16 @@
 
 {% block content %}
 <div class="container mt-5">
-    {% for message in get_flashed_messages() %}
-    <div class="alert alert-warning alert-dismissible fade show">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert {{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
     {% block page_content %}
     {% endblock %}
     <button id="gototop_button" aria-label="Go to top">Наверх</button>
