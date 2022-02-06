@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var goToTopButton = document.getElementById("gototop_button");
+    var goToTopButton = document.getElementById("gototop_btn");
     window.onscroll = function() {
         scrollFunction()
         };
@@ -10,7 +10,7 @@ $(document).ready(function () {
         goToTopButton.style.display = "none";
       }
     };
-    $("#gototop_button").click(function() {
+    $("#gototop_btn").click(function() {
         $('html,body').animate({ scrollTop: 0 }, 'fast');
         document.body.scrollTop = 0; // For Safari
     });

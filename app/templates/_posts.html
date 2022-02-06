@@ -12,31 +12,91 @@
       <div class="post-stamp">
         <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}">
           <span class="label label-default">
-              {% if post.status == post.STATUS_DELETED %}
+            {% if post.status == post.STATUS_DELETED %}
               [Удаленная]
-              {% elif post.status == post.STATUS_DRAFT %}
+            {% elif post.status == post.STATUS_DRAFT %}
               [Черновик]
-              {% endif %}Запись #{{ post.id }}</span>
+            {% endif %}
+            Запись #{{ post.id }}
+          </span>
         </a>
       </div>
-      <div class="post-author"><a href="{{ url_for('.user', username=post.author.username) }}">
+      <div class="post-author">
+        <a href="{{ url_for('.user', username=post.author.username) }}">
         {{ post.author.username }}</a>
         <span class="fw-light fst-italic">{{ post.timestamp.strftime('%d %B %Y') }}</span>
-        <div class="post-tags">Теги:
-          <span>
-            {% set tags_sorted = post.tags|sort(attribute='name', reverse=True) %}
-            {% for tag in tags_sorted %}
-              <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">
-                {{ tag.name }}</a>
-              {% if tag != tags_sorted[-1] %},{% endif %}
-            {% endfor %}
-          </span>
-        </div>
+        {% if post.tags|length > 0 %}
+          <div class="post-tags">Теги:
+            <span>
+              {% set tags_sorted = post.tags|sort(attribute='name', reverse=True) %}
+              {% for tag in tags_sorted %}
+                <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">
+                  {{ tag.name }}</a>
+                {% if tag != tags_sorted[-1] %},{% endif %}
+              {% endfor %}
+            </span>
+          </div>
+        {% endif %}
       </div>
       <div class="post-title ck-content">
         {{ post.title | safe }}
       </div>
-      <div class="post-body ck-content ">
+
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                  <div class="carousel-inner">
+                    <div class="carousel-item active">
+                      <img class="d-block w-100" src="">
+                    </div>
+                    <div class="carousel-item">
+                      <img class="d-block w-100" src="">
+                    </div>
+                  </div>
+                  <a class="carousel-control-prev" data-bs-target="#carouselExample" role="button" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                  </a>
+                  <a class="carousel-control-next" data-bs-target="#carouselExample" role="button" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                  </a>
+                </div>
+              </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Modal title</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Modal body text goes here.</p>
+              <img class="d-block w-100" src="">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-body ck-content">
         {% if showhide == 'hide' %}
         <div class='post-body-sizer'>
           <div class='post-body-realsize'>
@@ -47,76 +107,74 @@
             {% endif %}
           </div>
         </div>
-        <div class="mt-2 showhide">
+        <div class="mt-1 showhide">
           <a href="#"></a>
         </div>
         {% elif showhide == 'show' %}
-        {% if post.body_html %}
-        {{ (post.body_html | safe) }}
-        {% else %}
-        {{ post.body }}
+          {% if post.body_html %}
+            {{ (post.body_html | safe) }}
+          {% else %}
+            {{ post.body }}
+          {% endif %}
         {% endif %}
-        {% endif %}
-        <div class="mt-2 fw-light fst-italic post-edited">
+        <div class="mt-1 fw-light fst-italic post-edited">
           {% if post.timestamp_modified.strftime('%m %d %Y %H %M %S') != post.timestamp.strftime('%m %d %Y %H %M %S') %}
             Отредактировано: {{ moment(post.timestamp_modified).fromNow() }}
           {% endif %}
         </div>
       </div>
-      <div class="container p-0">
-        <div class="d-flex mt-5 justify-content-between">
-          <div class="col-6 post-buttons">
-            {% if current_user == post.author %}
+      <div class="container-fluid p-0 post-controls">
+        <div class="d-flex post-buttons">
+          {% if current_user == post.author %}
             {% if post.status == post.STATUS_DELETED %}
-            <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-secondary">Восстановить</button>
-            </form>
+              <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
+                <button type="submit" class="post-button btn-sm btn-secondary">Восстановить</button>
+              </form>
             {% else %}
-            <form method="get" action="{{ url_for('main.edit', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-secondary">Редактировать</button>
-            </form>
-            <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-danger">Удалить</button>
-            </form>
-            {% if post.status == post.STATUS_DRAFT %}
-            <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-success">Опубликовать</button>
-            </form>
+              <form method="get" action="{{ url_for('main.edit', id=post.id) }}">
+                <button type="submit" class="post-button btn-sm btn-secondary">Редактировать</button>
+              </form>
+              <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
+                <button type="submit" class="post-button btn-sm btn-danger">Удалить</button>
+              </form>
+                {% if post.status == post.STATUS_DRAFT %}
+                  <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
+                    <button type="submit" class="post-button btn-sm btn-success">Опубликовать</button>
+                  </form>
+                {% endif %}
             {% endif %}
-            {% endif %}
-            {% elif current_user.can(Permission.ADMIN) %}
+          {% elif current_user.can(Permission.ADMIN) %}
             {% if post.status == post.STATUS_DELETED %}
-            <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-secondary">Восстановить [АДМИН]</button>
-            </form>
+              <form method="POST" action="{{ url_for('main.recover', id=post.id) }}">
+                <button type="submit" class="post-button btn-sm btn-secondary">Восстановить [АДМИН]</button>
+              </form>
             {% else %}
-            <form method="get" action="{{ url_for('main.edit', id=post.id, edit_as_admin=True) }}">
-              <button type="submit" class="post-button btn-sm btn-secondary">Редактировать [АДМИН]</button>
-            </form>
-            <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-danger">Удалить [АДМИН]</button>
-            </form>
-            {% if post.status == post.STATUS_DRAFT %}
-            <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-              <button type="submit" class="post-button btn-sm btn-success">Опубликовать [АДМИН]</button>
-            </form>
+              <form method="get" action="{{ url_for('main.edit', id=post.id, edit_as_admin=True) }}">
+                <button type="submit" class="post-button btn-sm btn-secondary">Редактировать [АДМИН]</button>
+              </form>
+              <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
+                <button type="submit" class="post-button btn-sm btn-danger">Удалить [АДМИН]</button>
+              </form>
+              {% if post.status == post.STATUS_DRAFT %}
+                <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
+                  <button type="submit" class="post-button btn-sm btn-success">Опубликовать [АДМИН]</button>
+                </form>
+              {% endif %}
             {% endif %}
-            {% endif %}
-            {% endif %}
-          </div>
-          <div class="d-flex col-6 justify-content-end post-links">
-            {% if (active_page == 'index') %}
+          {% endif %}
+        </div>
+        <div class="d-flex post-links">
+          {% if (active_page == 'index') %}
             <a href="{{ url_for('.post', id=post.id) }}">
               <span>Читать далее</span>
             </a>
-            {% endif %}
-            {% if post.status == post.STATUS_PUBLIC %}
+          {% endif %}
+          {% if post.status == post.STATUS_PUBLIC %}
             <a href="{{ url_for('.post', id=post.id) }}#comments">
               <span>Комментарии</span>
               <span class="ms-1 badge bg-secondary rounded-pill">{{ post.comments.count() }}</span>
             </a>
-            {% endif %}
-          </div>
+          {% endif %}
         </div>
       </div>
     </div>

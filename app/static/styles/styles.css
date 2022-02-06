@@ -8,6 +8,12 @@
 	font-weight: normal;
 	font-style: normal;
 }
+.content-body {
+    max-width: 1000px;
+    @media (max-width: 900) {
+        max-width: 100%;
+    }
+}
 a {
     color: #767676;
 }
@@ -168,11 +174,20 @@ input[type=search] {
     display: inline-block;
     margin: 2px;
 }
+.post-links {
+    margin-left: auto;
+    justify-content: center;
+}
 .post-links > a {
     margin: 5px;
 }
 .post-links > a:hover {
     color: #DC7B86;
+}
+.post-controls {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 3.5rem;
 }
 
 .post-body-sizer {
@@ -236,22 +251,27 @@ input[type=search] {
     font-weight: bold;
 }
 
-#gototop_button {
+#gototop_btn {
     display: none;
     position: fixed;
-    bottom: 20px;
-    right: 30px;
+    bottom: 70px;
+    right: 20px;
     z-index: 99;
     border: none;
     outline: none;
     background-color: grey;
     color: white;
     cursor: pointer;
-    padding: 15px;
+    padding: 20px;
     border-radius: 20px;
     font-size: 18px;
 }
-
+@media (max-width: 1200px) {
+  #gototop_btn {
+    padding: 10px;
+    bottom: 10px;
+  }
+}
 #gototop_button:hover {
     background-color: #555;
 }
@@ -264,4 +284,37 @@ input[type=search] {
 }
 .alert_success {
     background-color: #D5FFC4;
+}
+
+/* Carousel */
+// Use Bootstrap breakpoints for consistency.
+$bootstrap-sm: 576px;
+$bootstrap-md: 768px;
+$bootstrap-lg: 992px;
+$bootstrap-xl: 1200px;
+
+#gallery {
+  img {
+    height: 75vw;
+    object-fit: cover;
+
+    @media (min-width: $bootstrap-sm) {
+      height: 35vw;
+    }
+
+    @media (min-width: $bootstrap-lg) {
+      height: 18vw;
+    }
+  }
+}
+
+.carousel-item {
+  img {
+    height: 60vw;
+    object-fit: cover;
+
+    @media (min-width: $bootstrap-sm) {
+      height: 350px;
+    }
+  }
 }

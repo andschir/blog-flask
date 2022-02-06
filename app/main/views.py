@@ -21,6 +21,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 def add_copyright(response, filepath, fontpath, ext):
     photo = Image.open(response)
+    # to save 'png' as 'jpeg'
+    # photo = photo.convert('RGB')
     w, h = photo.size
     ratio = w / h
     copy_width = 13
@@ -37,15 +39,17 @@ def add_copyright(response, filepath, fontpath, ext):
     copy_drawing = ImageDraw.Draw(copy_image)
     copy_drawing.text((0, 0), text, font=font)
 
-    copy_image = copy_image.resize((int(w * copy_width / 100), int(w * copy_width / 100 / ratio)),
-                                   resample=Image.HAMMING)
+    if w > 500:
+        copy_image = copy_image.resize((int(w * copy_width / 100), int(w * copy_width / 100 / ratio)),
+                                       resample=Image.HAMMING)
 
-    text_w, text_h = copy_image.size
-    position = w - text_w - int(w * 0.05), h - text_h
+    copy_w, copy_h = copy_image.size
+    position = w - copy_w - int(w * 0.05), h - text_h if w < 500 else h - copy_h
 
     photo.paste(copy_image, position, copy_image.convert('RGBA'))
 
-    photo.save(filepath, format=ext.upper(), subsampling=0, quality='web_maximum')
+    file_format = 'JPEG' if ext.lower() == 'jpg' else ext.upper()
+    photo.save(filepath, format=file_format, subsampling=0, quality='web_maximum')
 
 
 @main.route('/', methods=['GET', 'POST'])

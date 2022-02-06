@@ -15,20 +15,19 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.0/jquery-ui.min.js"></script>
 <script src="/static/scripts/search_checkbox_menu.js"></script>
 <script src="/static/scripts/goToTop.js"></script>
+<!--<script src="/static/scripts/add_Carousel.js"></script>-->
+<script src="/static/scripts/add_ImageModals.js"></script>
 {% endblock %}
 
 {% block navbar %}
-<nav class="navbar navbar-expand-md navbar-light bg-light">
+<nav class="navbar navbar-expand-md sticky-top navbar-light bg-light">
   <div class="container flex-wrap">
-
     <div class="mx-auto mb-2">
-    <a class="navbar-brand" href="{{ url_for('main.index') }}">BName</a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <a class="navbar-brand" href="{{ url_for('main.index') }}">BName</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
     </div>
-
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
@@ -43,7 +42,6 @@
         </li>
         {% endif %}
       </ul>
-
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item">
           <form class="d-flex" role="search" method="GET" action="{{ url_for('main.search') }}">
@@ -111,7 +109,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 content-body">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -124,7 +122,7 @@
     {% endwith %}
     {% block page_content %}
     {% endblock %}
-    <button id="gototop_button" aria-label="Go to top">Наверх</button>
+    <button id="gototop_btn" aria-label="Go to top">Наверх</button>
 </div>
 {% endblock %}
 
