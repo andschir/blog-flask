@@ -52,7 +52,7 @@
 {% set showhide = 'hide' %}
 {% include '_posts.html' %}
 {% if pagination %}
-<div class="pagination">
+<div class="d-flex justify-content-center pagination">
   {{ macros.pagination_widget(pagination, '.user', username=user.username) }}
 </div>
 {% endif %}

@@ -1,5 +1,4 @@
 <script src="/static/scripts/showhide.js"></script>
-<script src="/static/scripts/add_showhide.js"></script>
 <ul class="posts mt-0 border-top-0">
   {% for post in posts %}
   <li class="post">
@@ -77,22 +76,18 @@
         </div>
       </div>
 
-      <div class="modal fade" id="imageModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+      <div id="imageModal" class="modal fade justify-content-center" tabindex="-1">
+        <div class="">
+          <button type="button" class="modal-control download" title="Сохранить" aria-label="Download image"><i class="bi bi-download"></i></button>
+          <button type="button" class="modal-control" data-bs-dismiss="modal" title="Закрыть" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-dialog modal-dialog-centered flex-column justify-content-center">
           <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Modal title</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
             <div class="modal-body">
-              <p>Modal body text goes here.</p>
               <img class="d-block w-100" src="">
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
           </div>
+          <div class="modal-caption text-center"></div>
         </div>
       </div>
 
@@ -107,9 +102,6 @@
             {% endif %}
           </div>
         </div>
-        <div class="mt-1 showhide">
-          <a href="#"></a>
-        </div>
         {% elif showhide == 'show' %}
           {% if post.body_html %}
             {{ (post.body_html | safe) }}
@@ -117,6 +109,9 @@
             {{ post.body }}
           {% endif %}
         {% endif %}
+        <div class="mt-1 showhide">
+          <a href="#"></a>
+        </div>
         <div class="mt-1 fw-light fst-italic post-edited">
           {% if post.timestamp_modified.strftime('%m %d %Y %H %M %S') != post.timestamp.strftime('%m %d %Y %H %M %S') %}
             Отредактировано: {{ moment(post.timestamp_modified).fromNow() }}
