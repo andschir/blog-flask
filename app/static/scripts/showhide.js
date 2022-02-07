@@ -5,6 +5,28 @@ $(document).ready(function() {
     var showhides = document.querySelectorAll('div.showhide');
     var needed_height;
 
+//    window.addEventListener("wheel", event => {
+//      const delta = Math.sign(event.deltaY);
+//      console.info(delta);
+//    });
+
+    function zoom(event) {
+      event.preventDefault();
+
+      scale += event.deltaY * -0.01;
+
+      // Restrict scale
+      scale = Math.min(Math.max(1, scale), 4);
+
+      // Apply scale transform
+      el.style.transform = `scale(${scale})`;
+    }
+
+    let scale = 0.1;
+    const el = document.querySelector('#imageModal');
+    el.onwheel = zoom;
+
+
     divs.forEach(function(div, divnumber) {
       if (div.clientHeight/em > divheight) {
             showhides[divnumber].children[0].text = 'Показать полностью';
@@ -40,7 +62,11 @@ $(document).ready(function() {
         parent.style.height = content.clientHeight + 10 + "px";
         linkText = "Скрыть";
       } else {
-        parent.style.height = needed_height;
+        if (!!firstImage) {
+          parent.style.height = needed_height;
+        } else {
+          parent.style.height = '5em';
+        }
         linkText = "Показать полностью";
       }
 
