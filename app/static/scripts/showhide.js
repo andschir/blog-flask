@@ -5,33 +5,9 @@ $(document).ready(function() {
     var showhides = document.querySelectorAll('div.showhide');
     var needed_height;
 
-//    window.addEventListener("wheel", event => {
-//      const delta = Math.sign(event.deltaY);
-//      console.info(delta);
-//    });
-
-    function zoom(event) {
-      event.preventDefault();
-
-      scale += event.deltaY * -0.01;
-
-      // Restrict scale
-      scale = Math.min(Math.max(1, scale), 4);
-
-      // Apply scale transform
-      el.style.transform = `scale(${scale})`;
-    }
-
-    let scale = 0.1;
-    const el = document.querySelector('#imageModal');
-    el.onwheel = zoom;
-
-
     divs.forEach(function(div, divnumber) {
-      if (div.clientHeight/em > divheight) {
-            showhides[divnumber].children[0].text = 'Показать полностью';
-      }
       var sizer = div.parentElement;
+      var realsizer = sizer.children[0];
       if (!!div.getElementsByTagName('img')[0]) {
         var firstImage = div.getElementsByTagName('img')[0];
         firstImage.onload = function() {
@@ -40,6 +16,12 @@ $(document).ready(function() {
         sizer.setAttribute('style','transition: 0s');
         // TODO: Value in px is hardcoded. need container for showhide and post-edited
         sizer.style.height = (firstImage.height + 60) + 'px';
+      }
+
+      console.log(realsizer.clientHeight);
+      console.log(sizer.clientHeight);
+      if (realsizer.clientHeight > sizer.clientHeight ) {
+            showhides[divnumber].children[0].text = 'Показать полностью';
       }
     });
 

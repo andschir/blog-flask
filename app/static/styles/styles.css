@@ -324,12 +324,15 @@ $bootstrap-xl: 1200px;
   background-color: rgb(0,0,0);
   opacity: 0.8;
 }
+#modal_outer {
+  transition: transform 0.2s ease;
+}
 .modal-content {
     border-radius: 0;
 }
 .modal-caption {
   color: white;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0,0,0,0.9);
   width: 100%;
 }
 .modal-body {
