@@ -2,43 +2,57 @@
 <ul class="posts mt-0 border-top-0">
   {% for post in posts %}
   <li class="post">
-    <div class="post-thumbnail">
-      <a href="{{ url_for('.user', username=post.author.username) }}">
-        <img class="rounded-circle profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
-      </a>
-    </div>
     <div class="post-content">
-      <div class="post-stamp">
-        <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}">
-          <span class="label label-default">
-            {% if post.status == post.STATUS_DELETED %}
-              [Удаленная]
-            {% elif post.status == post.STATUS_DRAFT %}
-              [Черновик]
+      <div class="container-fluid d-flex p-0 flex-row flex-wrap post-header">
+        <div class="d-flex post-author flex-column flex-grow-1 w-50">
+          <div class="d-flex">
+            <div class="d-flex flex-shrink-0 me-2 post-thumbnail">
+              <a href="{{ url_for('.user', username=post.author.username) }}">
+                <img class="rounded-circle profile-thumbnail" src="{{ post.author.gravatar(size=40) }}"></a>
+            </div>
+            <div class="d-flex flex-grow-1 flex-column">
+              <div class="d-flex flex-wrap">
+                <div class="d-flex">
+                  <a href="{{ url_for('.user', username=post.author.username) }}">
+                  {{ post.author.username }}</a>
+                </div>
+                <div class="d-flex">
+                  <span class="ms-1 fw-light fst-italic">{{ post.timestamp.strftime('%d %B %Y') }}</span>
+                </div>
+              </div>
+              {% if post.tags|length > 0 %}
+              <div class="d-flex  post-tags">
+                <span>
+                  Теги:
+                  {% set tags_sorted = post.tags|sort(attribute='name', reverse=True) %}
+                  {% for tag in tags_sorted %}
+                    <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">
+                      {{ tag.name }}</a>
+                    {% if tag != tags_sorted[-1] %},{% endif %}
+                  {% endfor %}
+                </span>
+              </div>
             {% endif %}
-            Запись #{{ post.id }}
-          </span>
-        </a>
-      </div>
-      <div class="post-author">
-        <a href="{{ url_for('.user', username=post.author.username) }}">
-        {{ post.author.username }}</a>
-        <span class="fw-light fst-italic">{{ post.timestamp.strftime('%d %B %Y') }}</span>
-        {% if post.tags|length > 0 %}
-          <div class="post-tags">Теги:
-            <span>
-              {% set tags_sorted = post.tags|sort(attribute='name', reverse=True) %}
-              {% for tag in tags_sorted %}
-                <a href="{{ url_for('main.tag_detail', slug=tag.slug) }}">
-                  {{ tag.name }}</a>
-                {% if tag != tags_sorted[-1] %},{% endif %}
-              {% endfor %}
-            </span>
+            </div>
           </div>
-        {% endif %}
+        </div>
+        <div class="d-flex post-stamp mb-auto">
+          <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}">
+            <span class="label label-default">
+              {% if post.status == post.STATUS_DELETED %}
+                [Удаленная]
+              {% elif post.status == post.STATUS_DRAFT %}
+                [Черновик]
+              {% endif %}
+              Запись #{{ post.id }}
+            </span>
+          </a>
+        </div>
       </div>
-      <div class="post-title ck-content">
-        {{ post.title | safe }}
+      <div class="d-flex post-title ck-content me-auto">
+        <a href="{{ url_for('.post', id=post.id) }}">
+          {{ post.title | safe }}
+        </a>
       </div>
 
       <div class="modal fade justify-content-center" id="imageModal" tabindex="-1">
@@ -83,7 +97,7 @@
         </div>
         <div class="mt-1 fw-light fst-italic post-edited">
           {% if post.timestamp_modified.strftime('%m %d %Y %H %M %S') != post.timestamp.strftime('%m %d %Y %H %M %S') %}
-            Отредактировано: {{ moment(post.timestamp_modified).fromNow() }}
+            Изменено: {{ moment(post.timestamp_modified).fromNow() }}
           {% endif %}
         </div>
       </div>
@@ -128,15 +142,15 @@
           {% endif %}
         </div>
         <div class="d-flex post-links">
-          {% if (active_page == 'index') %}
+          {% if not (active_page == 'post') %}
             <a href="{{ url_for('.post', id=post.id) }}">
               <span>Читать далее</span>
             </a>
           {% endif %}
           {% if post.status == post.STATUS_PUBLIC %}
             <a href="{{ url_for('.post', id=post.id) }}#comments">
-              <span>Комментарии</span>
-              <span class="ms-1 badge bg-secondary rounded-pill">{{ post.comments.count() }}</span>
+              <i class="far fa-comment fa-xl"></i>
+              <span class="translate-middle badge rounded-pill bg-secondary">{{ post.comments.count() }}</span>
             </a>
           {% endif %}
         </div>

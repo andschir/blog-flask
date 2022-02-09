@@ -1,4 +1,5 @@
 $(document).ready(function() {
+  if (!!document.querySelector('.post')) {
     var em = parseFloat(getComputedStyle($(".post-body div").parent()[0]).fontSize);
     var divheight = $(".post-body div").children().parent()[0].clientHeight/em;
     var divs = document.querySelectorAll('div.post-body-realsize');
@@ -15,11 +16,10 @@ $(document).ready(function() {
         }
         sizer.setAttribute('style','transition: 0s');
         // TODO: Value in px is hardcoded. need container for showhide and post-edited
-        sizer.style.height = (firstImage.height + 60) + 'px';
+        sizer.style.height = (firstImage.height + 67) + 'px';
+        console.log(em)
       }
 
-      console.log(realsizer.clientHeight);
-      console.log(sizer.clientHeight);
       if (realsizer.clientHeight > sizer.clientHeight ) {
             showhides[divnumber].children[0].text = 'Показать полностью';
       }
@@ -55,4 +55,5 @@ $(document).ready(function() {
       $this.text(linkText);
       event.preventDefault()
     });
+  }
 });

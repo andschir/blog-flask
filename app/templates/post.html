@@ -6,10 +6,11 @@
 
 {% block page_content %}
 {% set showhide = 'show' %}
+{% set active_page = 'post' %}
 {% include '_posts.html' %}
 {% if posts[0].status == posts[0].STATUS_PUBLIC %}
-<div class="row d-flex justify-content-between">
-  <div class="ms-4 mt-3 col-4">
+<div class="d-flex justify-content-between">
+  <div class="d-flex ms-4 mt-3 col-4">
     <h4 id="comments">
       {% if posts[0].comments.count() == 0 %}
       Комментариев нет
@@ -18,10 +19,14 @@
       {% endif %}
     </h4>
   </div>
-  <div class="col-2 mt-3 me-3 form-check form-switch">
-    <input class="form-check-input moderate_checkbox" type="checkbox" id="flexSwitchCheckChecked" autocomplete="off">
-    <label class="form-check-label" for="flexSwitchCheckChecked">Модерация</label>
-  </div>
+  {% if current_user.can(Permission.MODERATE) %}
+    {% if not (posts[0].comments.count() == 0) %}
+      <div class="d-flex col-4 mt-3 p-0 form-check form-switch justify-content-end">
+        <input class="me-1 form-check-input moderate_checkbox" type="checkbox" id="moderate_switch" autocomplete="off">
+        <label class="form-check-label" for="moderate_switch">Модерация</label>
+      </div>
+    {% endif %}
+  {% endif %}
 </div>
 <div class="ms-4">
   {% if current_user.can(Permission.COMMENT) %}

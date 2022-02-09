@@ -7,7 +7,7 @@
 {% block page_content %}
 {% if posts|length != 0 %}
   <div class="page-header">
-    <h4>Посты по тегу <span class="fw-light fst-italic">«{{ tag.name }}»</span></h4>
+    <h4>Записи с тегом: <span class="fw-light fst-italic">«{{ tag.name }}» </span>({{ tag.posts.count() }})</h4>
   </div>
   <div>
     {% set active_page = 'index' %}

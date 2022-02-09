@@ -25,26 +25,22 @@ def add_copyright(response, filepath, fontpath, ext):
     # photo = photo.convert('RGB')
     w, h = photo.size
     ratio = w / h
-    copy_width = 13
+    copy_width = 15
     text = 'Blitzschnee'
     drawing = ImageDraw.Draw(photo)
 
     for font_size in range(w, 0, -1):
         font = ImageFont.truetype(fontpath, font_size)
         text_w, text_h = drawing.textsize(text, font)
-        if text_w <= w:
+        if (text_w <= w*copy_width/100) or (text_w <= 150):
             break
 
-    copy_image = Image.new('RGBA', (w, h))
+    copy_image = Image.new('RGBA', (text_w, text_h))
     copy_drawing = ImageDraw.Draw(copy_image)
     copy_drawing.text((0, 0), text, font=font)
 
-    if w > 500:
-        copy_image = copy_image.resize((int(w * copy_width / 100), int(w * copy_width / 100 / ratio)),
-                                       resample=Image.HAMMING)
-
     copy_w, copy_h = copy_image.size
-    position = w - copy_w - int(w * 0.05), h - text_h if w < 500 else h - copy_h
+    position = w - int(copy_w*1.2), h - int(copy_h*1.2)
 
     photo.paste(copy_image, position, copy_image.convert('RGBA'))
 

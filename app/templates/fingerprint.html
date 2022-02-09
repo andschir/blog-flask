@@ -1,0 +1,49 @@
+<b>Hash:</b> <span id="hash-code"></span><br>
+<canvas id="myCanvas" width='200' height="40" style="border: 1px solid #000000;" hidden></canvas>
+<script>
+  var canvas = document.getElementById('myCanvas');
+  var ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'rgb(255,0,255)';
+  ctx.beginPath();
+  ctx.rect(20, 20, 150, 100);
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+  ctx.beginPath();
+  ctx.fillStyle = 'rgb(0,255,255)';
+  ctx.arc(50, 50, 50, 0, Math.PI * 2, true);
+  ctx.fill();
+  ctx.stroke();
+  ctx.closePath();
+
+  txt = '@!*)%*)@!%^*!)%!';
+  ctx.textBaseLine = 'top';
+  ctx.font = '17px "Arial 17"';
+  ctx.textBaseLine = 'alphabetic';
+  ctx.fillStyle = 'rgb(255,5,5)';
+  ctx.rotate(.03);
+  ctx.fillText(txt, 4, 17);
+  ctx.fillStyle = 'rgb(155,255,5)';
+  ctx.shadowBlur = 8;
+  ctx.shadowColor = 'red';
+  ctx.fillRect(20, 12, 100, 5);
+
+  // hashing function
+  src = canvas.toDataURL();
+
+  const cyrb53 = function(str, seed = 0) {
+      let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+      for (let i = 0, ch; i < str.length; i++) {
+          ch = str.charCodeAt(i);
+          h1 = Math.imul(h1 ^ ch, 2654435761);
+          h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);
+      return 4294967296 * (2097151 & h2) + (h1>>>0);
+  };
+
+  // output
+  document.getElementById('hash-code').textContent = cyrb53(src).toString(16);
+</script>

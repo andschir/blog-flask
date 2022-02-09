@@ -1,28 +1,15 @@
-@font-face {
-	font-family: 'icomoon';
-	src:url('../fonts/icomoon/icomoon.eot');
-	src:url('../fonts/icomoon/icomoon.eot?#iefix') format('embedded-opentype'),
-		url('../fonts/icomoon/icomoon.woff') format('woff'),
-		url('../fonts/icomoon/icomoon.ttf') format('truetype'),
-		url('../fonts/icomoon/icomoon.svg#icomoon') format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
 .content-body {
     max-width: 1000px;
     @media (max-width: 900) {
         max-width: 100%;
     }
 }
-a {
-    color: #767676;
-}
-.profile-thumbnail {
-    position: absolute;
-}
 .profile-header {
     min-height: 260px;
     margin-left: 280px;
+}
+.profile-header a {
+    color: #767676;
 }
 ul.posts {
     list-style-type: none;
@@ -34,15 +21,14 @@ ul.posts li.post {
     padding: 8px;
     border-bottom: 1px solid #e0e0e0;
 }
-.post-body {
-    background-color: #f5fcff;
+div.post-content {
+    min-height: 48px;
 }
 div.post-stamp a {
-    float: right;
     text-decoration: none;
 }
-div.post-edited {
-    float: right;
+.post-header a {
+    color: #767676;
 }
 div.post-author a {
     font-weight: bold;
@@ -54,17 +40,48 @@ div.post-tags {
 div.post-tags a {
     font-weight: 300;
 }
-div.post-thumbnail {
-    position: absolute;
-}
 div.post-title {
     min-height: 10px;
     font-weight: 700;
     font-size: 30px;
 }
-div.post-content {
-    margin-left: 48px;
-    min-height: 48px;
+div.post-title a {
+    text-decoration: none;
+    color: inherit;
+}
+.post-body {
+    background-color: #f5fcff;
+}
+.showhide {
+    float: left;
+}
+.showhide a {
+    float: left;
+    color: #767676;
+}
+div.post-edited {
+    float: right;
+}
+.post-controls {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 3.5rem;
+}
+.post-buttons > form {
+    display: inline-block;
+    margin-right: 16px;
+}
+.post-links {
+    margin-left: auto;
+    justify-content: center;
+}
+.post-links > a {
+    margin-left: 16px;
+    text-decoration: none;
+    color: #767676;
+}
+.post-links > a:hover {
+    color: #DC7B86;
 }
 ul.comments {
     list-style-type: none;
@@ -170,26 +187,6 @@ input[type=search] {
   -webkit-transition: width 0.4s ease-in-out;
   transition: width 0.4s ease-in-out;
 }
-.post-buttons > form {
-    display: inline-block;
-    margin: 2px;
-}
-.post-links {
-    margin-left: auto;
-    justify-content: center;
-}
-.post-links > a {
-    margin: 5px;
-}
-.post-links > a:hover {
-    color: #DC7B86;
-}
-.post-controls {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 3.5rem;
-}
-
 .post-body-sizer {
   -moz-transition: height .5s;
   -ms-transition: height .5s;
@@ -197,13 +194,9 @@ input[type=search] {
   -webkit-transition: height .5s;
   transition: height .5s;
   overflow: hidden;
-  line-height: 1em;
-  height: 5em;
+  line-height: 1.5em;
+  height: 7.5em;
 }
-.showhide {
-    float: left;
-}
-
 .search-checkbox-menu li label {
     display: block;
     padding: 3px 10px;
@@ -285,40 +278,6 @@ input[type=search] {
 .alert_success {
     background-color: #D5FFC4;
 }
-
-/* Carousel */
-// Use Bootstrap breakpoints for consistency.
-$bootstrap-sm: 576px;
-$bootstrap-md: 768px;
-$bootstrap-lg: 992px;
-$bootstrap-xl: 1200px;
-
-#gallery {
-  img {
-    height: 75vw;
-    object-fit: cover;
-
-    @media (min-width: $bootstrap-sm) {
-      height: 35vw;
-    }
-
-    @media (min-width: $bootstrap-lg) {
-      height: 18vw;
-    }
-  }
-}
-
-.carousel-item {
-  img {
-    height: 60vw;
-    object-fit: cover;
-
-    @media (min-width: $bootstrap-sm) {
-      height: 350px;
-    }
-  }
-}
-
 /* Image Modal */
 .modal-backdrop.show {
   background-color: rgb(0,0,0);
