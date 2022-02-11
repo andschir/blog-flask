@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% import "bootstrap5/form.html" as wtf %}
 
 {% block title %}Создать запись{% endblock %}
 
@@ -12,16 +11,17 @@
 {% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-  {% if current_user.can(Permission.WRITE) %}
-  <h2>Новая запись</h2>
-  {% else %}
-  <h1>Read-only: У вас нет разрешения создавать записи</h1>
-  {% endif %}
-</div>
+
 
 {% if current_user.can(Permission.WRITE) %}
 <div class="container mb-3">
+  <div class="page-header row mx-auto">
+    {% if current_user.can(Permission.WRITE) %}
+    <h2>Новая запись</h2>
+    {% else %}
+    <h1>Read-only: У вас нет разрешения создавать записи</h1>
+    {% endif %}
+  </div>
   <form action="{{ url_for('main.create') }}" class="form form-group form-horizontal" method="POST">
     {{ form.csrf_token }}
     <div class="row mx-auto mt-3">
@@ -36,6 +36,15 @@
       <div class="">
         {{ form.body }}
       </div>
+      <div id="editor-autosave-header">
+      <div id="editor-autosave-status" class="" hidden>
+           <div id="editor-autosave-status_label">Автосохранение:</div>
+                <div id="editor-autosave-status_spinner">
+                     <span id="editor-autosave-status_spinner-label"></span>
+                     <span id="editor-autosave-status_spinner-loader"></span>
+                 </div>
+            </div>
+       </div>
       <div id="body_empty"></div>
     </div>
     <div class="row mx-auto mt-3">
@@ -46,7 +55,10 @@
         <span>{{ form.status.label(class='control-label') }} {{ form.status }}</span>
       </div>
       <div class="form-group mt-3">
-        <button type="submit" class="btn btn-primary">Создать</button>
+        <div id="saved_successfully"></div>
+        <button type="submit" class="btn btn-primary" name="submit_button" value="submit_button_value_1">Ок1</button>
+        <button type="submit" class="btn btn-secondary" name="btn_submit" value="publish">publish</button>
+        <button type="submit" class="btn btn-secondary" name="btn_create_draft" value="create_draft">Создать черновик</button>
         <a class="btn btn-danger" type="button" href="{{ url_for('main.index') }}">Отмена</a>
       </div>
     </div>

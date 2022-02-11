@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    var draftId; // id of saved draft for newly created Post OR id of post being edited
+
     // Title editor instance
     ClassicEditor
         .create( document.querySelector( '#title' ), {
@@ -19,9 +21,17 @@ $(document).ready(function() {
         .then(editor => {
             editor.model.document.on('change', () => {
               if (countCharacters(editor.model.document) > 0) {
-                document.querySelector('#title_empty').innerText = ''
-              }
+                document.querySelector('#title_empty').innerText = '';
+                document.querySelector('#editor-autosave-status').hidden = false;
+                document.querySelector('#editor-autosave-status').classList.add( 'busy' );
+              };
+              setTimeout( () => {
+                editorBody.config._config.autosave.save(editorBody);
+                document.querySelector('#editor-autosave-status').classList.remove( 'busy' );
+                }, 5000
+              );
             });
+            window.editorTitle = editor;
         })
         .catch( error => {
             console.error( error );
@@ -73,7 +83,6 @@ $(document).ready(function() {
                 if ( !modelAttributeValue ) {
                     return;
                 }
-                console.log(modelAttributeValue.username)
                 return writer.createAttributeElement( 'a', {
                     class: 'mention',
                     'data-mention': modelAttributeValue.id,
@@ -87,6 +96,40 @@ $(document).ready(function() {
                 } );
             },
             converterPriority: 'high'
+        } );
+    }
+
+
+    function saveData( array ) {
+        return new Promise( resolve => {
+            if (draftId) {
+              array.push(draftId);
+            }
+            json = JSON.stringify({ input_fields: array });
+            $.ajax( {
+                    type: "POST",
+                    url: "/autosave",
+                    contentType: 'application/json;charset=utf-8',
+                    dataType: 'json',
+                    data: json,
+                    success: function ( response ) {
+                        resolve();
+                        console.info('autosave: ' + response.result);
+                    }
+                } );
+        } );
+    }
+
+    function displayStatus( editor ) {
+        const pendingActions = editor.plugins.get( 'PendingActions' );
+        const statusIndicator = document.querySelector('#editor-autosave-status');
+
+        pendingActions.on( 'change:hasAny', ( evt, propertyName, newValue ) => {
+            if ( newValue ) {
+                statusIndicator.classList.add( 'busy' );
+            } else {
+                statusIndicator.classList.remove( 'busy' );
+            }
         } );
     }
 
@@ -108,13 +151,29 @@ $(document).ready(function() {
                       }
                 ]
             },
+            autosave: {
+              waitingTime: 5000,
+              save( editor ) {
+                inputFields = $(".form").serializeArray();
+                inputFields.splice(0, 1); // delete CSRF token
+                inputFields[0].value = editorTitle.getData(); // replace Title and Body with cke data
+                inputFields[1].value = editorBody.getData();
+
+                if (editorTitle.getData() && editorBody.getData()) {
+                  return saveData( inputFields );
+                }
+              }
+            },
         } )
         .then(editor => {
             editor.model.document.on('change', () => {
               if (countCharacters(editor.model.document) > 0) {
-                document.querySelector('#body_empty').innerText = ''
-              }
+                document.querySelector('#body_empty').innerText = '';
+              };
+              document.querySelector('#editor-autosave-status').hidden = false;
             });
+            window.editorBody = editor;
+            displayStatus( editorBody );
         })
         .catch( error => {
             console.error( error.stack );
@@ -139,19 +198,67 @@ $(document).ready(function() {
       }
     }
 
+
+
+    document.querySelector('#status').addEventListener('change', (event) => {
+      if (event.target.selectedIndex == 0) {
+        document.querySelector('#status').labels[0].textContent = 'Сохранить:';
+      } else {
+        document.querySelector('#status').labels[0].textContent = 'Разместить:';
+      }
+    });
+
+    function createDraft() {
+        return new Promise( resolve => {
+            $.ajax( {
+                type: "POST",
+                url: "/create_draft",
+                success: function ( response ) {
+                    resolve( draftId = response.draft_id );
+                }
+            } );
+            $('#saved_successfully').html('Черновик создан!');
+            document.querySelector('#status').selectedIndex = 1;
+            document.querySelector('#status').labels[0].hidden = true;
+            document.querySelector('#status').hidden = true;
+            document.querySelector('.btn-primary').textContent = 'Опубликовать';
+            document.querySelector('.btn-danger').textContent = 'Закрыть'; // TODO: change redirect from index to draft
+        } );
+    }
+
+
+
+    if ( window.location.href.match(/edit/) ) {
+      postId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1).slice(0, -1);
+      draftId = postId;
+      document.querySelector('#status').addEventListener('change', (event) => {
+        if (document.querySelector('#status').selectedIndex == 0) {
+          document.querySelector('#status').labels[0].textContent = 'Сохранить:';
+          document.querySelector('#status').options[0].innerHTML = 'черновик';
+          document.querySelector('.btn-primary').textContent = 'Сохранить';
+        } else {
+          document.querySelector('#status').labels[0].textContent = 'Разместить:';
+          document.querySelector('.btn-primary').textContent = 'Опубликовать';
+        }
+      });
+    } else if ( window.location.href.match(/create/) ) {
+      document.querySelector('.btn-primary').addEventListener('click', (event) => {
+        if (document.querySelector('#status').selectedIndex == 0) { // TODO: change logic implementation
+              event.preventDefault();
+              createDraft();
+              // TODO: add animation of successful draft saving
+            } else {console.log('posting');}
+      });
+    }
+
+    // NEW
+    document.querySelector('button[name=btn_create_draft]').addEventListener('click', (event) => {
+      event.preventDefault();
+      createDraft();
+    });
+
     // Validating: no empty fields
     $(".form").submit(function(e) {
-        var content = $('#body').val();
-        html = $(content).text();
-        if ($.trim(html) == '') {
-            e.preventDefault();
-            $.ajax({
-                success: function(data) {
-                    $('#body_empty').html('Пустое поле, введите текст!');
-                }
-            });
-        }
-
         var content = $('#title').val();
         html = $(content).text();
         if ($.trim(html) == '') {
@@ -159,6 +266,17 @@ $(document).ready(function() {
             $.ajax({
                 success: function(data) {
                     $('#title_empty').html('Пустое поле, введите заголовок!');
+                }
+            });
+        }
+
+        var content = $('#body').val();
+        html = $(content).text();
+        if ($.trim(html) == '') {
+            e.preventDefault();
+            $.ajax({
+                success: function(data) {
+                    $('#body_empty').html('Пустое поле, введите текст!');
                 }
             });
         }

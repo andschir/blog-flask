@@ -12,12 +12,11 @@
 {% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-  <h1>Редактировать запись</h1>
-  <p class="text-danger">{% if current_user.can(Permission.ADMIN) and (current_user != post.author) %} {{ 'Как Администратор' }} {% endif %}</p>
-</div>
-
 <div class="container mb-3">
+  <div class="page-header row mx-auto">
+    <h1>Редактировать запись</h1>
+    <p class="text-danger">{% if current_user.can(Permission.ADMIN) and (current_user != post.author) %} {{ 'Как Администратор' }} {% endif %}</p>
+  </div>
   <form action="{{ url_for('.edit', id=post.id) }}" class="form form-group form-horizontal" method="POST">
     {{ form.csrf_token }}
     <div class="row mx-auto mt-3">
@@ -31,8 +30,17 @@
       <h3>{{ form.body.label(class='control-label') }}</h3>
       <div class="">
         {{ form.body }}
-        <div id="body_empty"></div>
       </div>
+      <div id="editor-autosave-header">
+      <div id="editor-autosave-status" class="" hidden>
+           <div id="editor-autosave-status_label">Автосохранение:</div>
+                <div id="editor-autosave-status_spinner">
+                     <span id="editor-autosave-status_spinner-label"></span>
+                     <span id="editor-autosave-status_spinner-loader"></span>
+                 </div>
+            </div>
+       </div>
+      <div id="body_empty"></div>
     </div>
     <div class="row mx-auto mt-3">
         <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>

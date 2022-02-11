@@ -75,10 +75,11 @@ class PostForm(FlaskForm):
     body = TextAreaField('Текст')
     submit = SubmitField('Создать')
     status = SelectField(
-        name='Опубликовать:',
+        label='Создать:',
+        name='status',
         choices=(
-            (Post.STATUS_DRAFT, 'как черновик'),
-            (Post.STATUS_PUBLIC, 'публично')
+            (Post.STATUS_DRAFT, 'новый черновик'),
+            (Post.STATUS_PUBLIC, 'публичную запись')
         ),
         coerce=int
     )

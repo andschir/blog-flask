@@ -323,3 +323,82 @@ input[type=search] {
   text-decoration: none;
   cursor: pointer;
 }
+/* CKEditor Autosave */
+#editor-autosave-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: calc(var(--bs-gutter-x) * .5);
+}
+
+#editor-autosave-status_spinner {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+#editor-autosave-status_spinner-label {
+    position: relative;
+}
+
+    #editor-autosave-status_spinner-label::after {
+        content: 'Готово!';
+        color: green;
+        display: inline-block;
+        margin-right: var(--ck-spacing-medium);
+    }
+
+/* During "Saving" display spinner and change content of label. */
+#editor-autosave-status.busy #editor-autosave-status_spinner-label::after {
+    content: 'в процессе...';
+    color: grey;
+}
+
+#editor-autosave-status.busy #editor-autosave-status_spinner-loader {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border-top: 3px solid hsl(0, 0%, 70%);
+    border-right: 2px solid transparent;
+    animation: autosave-status-spinner 1s linear infinite;
+}
+
+#editor-autosave-status,
+#editor-autosave-server {
+    display: flex;
+    align-items: center;
+}
+
+#editor-autosave-server_label,
+#editor-autosave-status_label {
+    font-weight: bold;
+    margin-right: var(--ck-spacing-medium);
+}
+
+#editor-autosave + .ck.ck-editor .ck-editor__editable {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+#editor-autosave-lag {
+    padding: 4px;
+}
+
+#editor-autosave-console {
+    max-height: 300px;
+    overflow: auto;
+    white-space: normal;
+    background: #2b2c26;
+    transition: background-color 500ms;
+}
+
+    #editor-autosave-console.updated {
+        background: green;
+    }
+
+@keyframes autosave-status-spinner {
+    to {
+        transform: rotate( 360deg );
+    }
+}

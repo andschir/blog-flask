@@ -130,6 +130,8 @@ def post(id):
 def create():
     form = PostForm()
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        submit_context = request.form.get('submit_button')
+        print(submit_context)
         post = Post(title=form.title.data,
                     body=form.body.data,
                     author=current_user._get_current_object(),
@@ -140,6 +142,42 @@ def create():
         flash('Запись успешно создана', 'alert_success')
         return redirect(url_for('.post', id=post.id))
     return render_template('create.html', form=form, active_create='active')
+
+
+@main.route('/create_draft', methods=['GET', 'POST'])
+@login_required
+def create_draft():
+    if current_user.can(Permission.WRITE):
+        post = Post(author=current_user._get_current_object(),
+                    status=1)
+        db.session.add(post)
+        db.session.commit()
+        return {'draft_id': post.id}
+    return {'result': 'negative'}
+
+
+@main.route('/autosave', methods=['GET', 'POST'])
+@login_required
+def autosave():
+    data = request.json['input_fields']
+    if len(data) > 4:
+        draft_id = data[-1]
+        post = Post.query.get_or_404(draft_id)
+        if current_user != post.author:
+            if not current_user.can(Permission.ADMIN):
+                abort(403)
+        post.title = data[0]['value']
+        post.body = data[1]['value']
+        post.status = 1
+        db.session.add(post)
+        db.session.commit()
+        return {'result': 'draft updated'}
+    # if current_user.can(Permission.WRITE):
+    #     post = Post(title=data[0]['value'],
+    #                 body=data[1]['value'],
+    #                 status=1,
+    #                 author=current_user._get_current_object())
+    return {'result': data}
 
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])

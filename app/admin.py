@@ -149,7 +149,6 @@ def add_admin_views(app_instance):
             if name == 'title':
                 return Markup(model.title)
             if name == 'body':
-                print(Markup(model.body))
                 return Markup(model.body)[:200]
 
         _status_choices = [(choice, label) for choice, label in [
