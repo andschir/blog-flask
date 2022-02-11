@@ -22,7 +22,6 @@ $(document).ready(function() {
             editor.model.document.on('change', () => {
               if (countCharacters(editor.model.document) > 0) {
                 document.querySelector('#title_empty').innerText = '';
-                document.querySelector('#editor-autosave-status').hidden = false;
                 document.querySelector('#editor-autosave-status').classList.add( 'busy' );
               };
               setTimeout( () => {
@@ -35,6 +34,52 @@ $(document).ready(function() {
         })
         .catch( error => {
             console.error( error );
+        } );
+
+    // Body editor instance
+    ClassicEditor
+        .create( document.querySelector( '#body' ), {
+            extraPlugins: ['SimpleUploadAdapter', MentionCustomization],
+            simpleUpload: {
+                uploadUrl: '/upload',
+            },
+            mediaEmbed: {previewsInData: true},
+            mention: {
+                feeds: [
+                      {
+                        marker: '@',
+                        feed: getFeedItems,
+                        minimumCharacters: 1,
+                        dropdownLimit: 4,
+                      }
+                ]
+            },
+            autosave: {
+              waitingTime: 5000,
+              save( editor ) {
+              // TODO: move operations to function
+                inputFields = $(".form").serializeArray();
+                inputFields.splice(0, 1); // delete CSRF token
+                inputFields[0].value = editorTitle.getData(); // replace Title and Body with cke data
+                inputFields[1].value = editorBody.getData();
+
+                if (editorTitle.getData() && editorBody.getData()) {
+                  return saveData( inputFields );
+                }
+              }
+            },
+        } )
+        .then(editor => {
+            editor.model.document.on('change', () => {
+              if (countCharacters(editor.model.document) > 0) {
+                document.querySelector('#body_empty').innerText = '';
+              };
+            });
+            window.editorBody = editor;
+            displayStatus( editorBody );
+        })
+        .catch( error => {
+            console.error( error.stack );
         } );
 
     // Mention data-feed
@@ -99,7 +144,6 @@ $(document).ready(function() {
         } );
     }
 
-
     function saveData( array ) {
         return new Promise( resolve => {
             if (draftId) {
@@ -107,16 +151,16 @@ $(document).ready(function() {
             }
             json = JSON.stringify({ input_fields: array });
             $.ajax( {
-                    type: "POST",
-                    url: "/autosave",
-                    contentType: 'application/json;charset=utf-8',
-                    dataType: 'json',
-                    data: json,
-                    success: function ( response ) {
-                        resolve();
-                        console.info('autosave: ' + response.result);
-                    }
-                } );
+                type: "POST",
+                url: "/autosave",
+                contentType: 'application/json;charset=utf-8',
+                dataType: 'json',
+                data: json,
+                success: function ( response ) {
+                    resolve();
+                    console.info('autosave: ' + response.result); // TODO: change return to 200
+                }
+            } );
         } );
     }
 
@@ -132,52 +176,6 @@ $(document).ready(function() {
             }
         } );
     }
-
-    // Body editor instance
-    ClassicEditor
-        .create( document.querySelector( '#body' ), {
-            extraPlugins: ['SimpleUploadAdapter', MentionCustomization],
-            simpleUpload: {
-                uploadUrl: '/upload',
-            },
-            mediaEmbed: {previewsInData: true},
-            mention: {
-                feeds: [
-                      {
-                        marker: '@',
-                        feed: getFeedItems,
-                        minimumCharacters: 1,
-                        dropdownLimit: 4,
-                      }
-                ]
-            },
-            autosave: {
-              waitingTime: 5000,
-              save( editor ) {
-                inputFields = $(".form").serializeArray();
-                inputFields.splice(0, 1); // delete CSRF token
-                inputFields[0].value = editorTitle.getData(); // replace Title and Body with cke data
-                inputFields[1].value = editorBody.getData();
-
-                if (editorTitle.getData() && editorBody.getData()) {
-                  return saveData( inputFields );
-                }
-              }
-            },
-        } )
-        .then(editor => {
-            editor.model.document.on('change', () => {
-              if (countCharacters(editor.model.document) > 0) {
-                document.querySelector('#body_empty').innerText = '';
-              };
-              document.querySelector('#editor-autosave-status').hidden = false;
-            });
-            window.editorBody = editor;
-            displayStatus( editorBody );
-        })
-        .catch( error => {
-            console.error( error.stack );
-        } );
 
     // Body character count
     function countCharacters(document) {
@@ -198,31 +196,21 @@ $(document).ready(function() {
       }
     }
 
-
-
-    document.querySelector('#status').addEventListener('change', (event) => {
-      if (event.target.selectedIndex == 0) {
-        document.querySelector('#status').labels[0].textContent = 'Сохранить:';
-      } else {
-        document.querySelector('#status').labels[0].textContent = 'Разместить:';
-      }
-    });
-
     function createDraft() {
         return new Promise( resolve => {
             $.ajax( {
                 type: "POST",
                 url: "/create_draft",
                 success: function ( response ) {
-                    resolve( draftId = response.draft_id );
+                  resolve( draftId = response.draft_id );
+                  $('#saved_successfully').html('Черновик создан!');
+                  document.querySelector('#btn_create_draft').textContent = 'Черновик создан';
+                  document.querySelector('#btn_create_draft').disabled = true;
+                  document.querySelector('.page-header').textContent = `Черновик #${draftId}`
+                  editorBody.config._config.autosave.save(editorBody);
+                  document.querySelector('#editor-autosave-status').hidden = false;
                 }
             } );
-            $('#saved_successfully').html('Черновик создан!');
-            document.querySelector('#status').selectedIndex = 1;
-            document.querySelector('#status').labels[0].hidden = true;
-            document.querySelector('#status').hidden = true;
-            document.querySelector('.btn-primary').textContent = 'Опубликовать';
-            document.querySelector('.btn-danger').textContent = 'Закрыть'; // TODO: change redirect from index to draft
         } );
     }
 
@@ -231,31 +219,15 @@ $(document).ready(function() {
     if ( window.location.href.match(/edit/) ) {
       postId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1).slice(0, -1);
       draftId = postId;
-      document.querySelector('#status').addEventListener('change', (event) => {
-        if (document.querySelector('#status').selectedIndex == 0) {
-          document.querySelector('#status').labels[0].textContent = 'Сохранить:';
-          document.querySelector('#status').options[0].innerHTML = 'черновик';
-          document.querySelector('.btn-primary').textContent = 'Сохранить';
-        } else {
-          document.querySelector('#status').labels[0].textContent = 'Разместить:';
-          document.querySelector('.btn-primary').textContent = 'Опубликовать';
-        }
-      });
+      document.querySelector('#editor-autosave-status').hidden = false;
     } else if ( window.location.href.match(/create/) ) {
-      document.querySelector('.btn-primary').addEventListener('click', (event) => {
-        if (document.querySelector('#status').selectedIndex == 0) { // TODO: change logic implementation
-              event.preventDefault();
-              createDraft();
-              // TODO: add animation of successful draft saving
-            } else {console.log('posting');}
+      document.querySelector('#btn_create_draft').addEventListener('click', (event) => {
+        event.preventDefault();
+        createDraft();
       });
     }
 
-    // NEW
-    document.querySelector('button[name=btn_create_draft]').addEventListener('click', (event) => {
-      event.preventDefault();
-      createDraft();
-    });
+
 
     // Validating: no empty fields
     $(".form").submit(function(e) {

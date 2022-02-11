@@ -56,10 +56,9 @@
       </div>
       <div class="form-group mt-3">
         <div id="saved_successfully"></div>
-        <button type="submit" class="btn btn-primary" name="submit_button" value="submit_button_value_1">Ок1</button>
-        <button type="submit" class="btn btn-secondary" name="btn_submit" value="publish">publish</button>
-        <button type="submit" class="btn btn-secondary" name="btn_create_draft" value="create_draft">Создать черновик</button>
-        <a class="btn btn-danger" type="button" href="{{ url_for('main.index') }}">Отмена</a>
+        <button type="submit" id="btn_publish" class="btn btn-secondary" name="btn_submit" value="publish">Опубликовать</button>
+        <button type="submit" id="btn_create_draft" class="btn btn-secondary" name="btn_submit" value="create_draft">Сохранить как черновик</button>
+        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Закрыть</a>
       </div>
     </div>
   </form>

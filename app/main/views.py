@@ -130,12 +130,15 @@ def post(id):
 def create():
     form = PostForm()
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
-        submit_context = request.form.get('submit_button')
-        print(submit_context)
+        submit_context = request.form.get('btn_submit')
+        if submit_context == 'publish':
+            status = Post.STATUS_PUBLIC
+        else:
+            status = Post.STATUS_DRAFT
         post = Post(title=form.title.data,
                     body=form.body.data,
                     author=current_user._get_current_object(),
-                    status=form.status.data,
+                    status=status,
                     tags=form.tags.data)
         db.session.add(post)
         db.session.commit()
@@ -160,7 +163,7 @@ def create_draft():
 @login_required
 def autosave():
     data = request.json['input_fields']
-    if len(data) > 4:
+    if len(data) > 4 and current_user.can(Permission.WRITE):
         draft_id = data[-1]
         post = Post.query.get_or_404(draft_id)
         if current_user != post.author:
@@ -168,15 +171,10 @@ def autosave():
                 abort(403)
         post.title = data[0]['value']
         post.body = data[1]['value']
-        post.status = 1
+        post.status = Post.STATUS_DRAFT
         db.session.add(post)
         db.session.commit()
         return {'result': 'draft updated'}
-    # if current_user.can(Permission.WRITE):
-    #     post = Post(title=data[0]['value'],
-    #                 body=data[1]['value'],
-    #                 status=1,
-    #                 author=current_user._get_current_object())
     return {'result': data}
 
 
@@ -189,9 +187,14 @@ def edit(id):
             abort(403)
     form = PostForm()
     if form.validate_on_submit():
+        submit_context = request.form.get('btn_submit')
+        if submit_context == 'publish':
+            status = Post.STATUS_PUBLIC
+        elif submit_context == 'save':
+            status = Post.STATUS_DRAFT
         post.title = form.title.data
         post.body = form.body.data
-        post.status = form.status.data
+        post.status = status
         post.tags = form.tags.data
         post.refresh_timestamp_modified()
         db.session.add(post)
@@ -200,7 +203,7 @@ def edit(id):
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title
     form.body.data = post.body
-    form.status.data = post.status
+    # form.status.data = post.status
     form.tags.data = post.tags
     return render_template('edit_post.html', form=form, post=post)
 

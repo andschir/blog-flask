@@ -50,8 +50,9 @@
         <span>{{ form.status.label(class='control-label') }} {{ form.status }}</span>
       </div>
       <div class="form-group mt-3">
-        <button type="submit" class="btn btn-primary">Сохранить</button>
-        <a type="button" class="btn btn-danger" href="{{ url_for('main.post', id=post.id) }}" onclick="history.back(-1)">Отмена</a>
+        <button type="submit" id="btn_publish" class="btn btn-primary" name="btn_submit" value="publish" formaction="{{ url_for('main.create') }}">Опубликовать</button>
+        <button type="submit" id="btn_save" class="btn btn-secondary" name="btn_submit" value="save" formaction="{{ url_for('main.post', id=post.id) }}">Сохранить</button>
+        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Закрыть</a>
       </div>
     </div>
   </form>
