@@ -591,3 +591,22 @@ def mention():
         {'id': name, 'username': name[1:]} for name in ['@' + i[0] for i in query.all()]
     ]
     return {'result': results}
+
+
+@main.route('/test')
+def welcome():
+    return 'Welcome to flask_apscheduler demo', 200
+
+import datetime
+from apscheduler.triggers.date import DateTrigger
+@main.route('/run-tasks')
+def run_tasks():
+    after_10s = datetime.datetime.now() + datetime.timedelta(seconds=10)
+    post_number = 8
+    current_app.apscheduler.add_job(func=scheduled_task, trigger=DateTrigger(after_10s), args=[post_number], id='job#' + str(post_number))
+
+    return 'Scheduled several long running tasks.', 200
+
+
+def scheduled_task(post_number):
+    print(f'published Post #{post_number}')

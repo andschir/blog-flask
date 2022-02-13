@@ -5,6 +5,7 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_ckeditor import CKEditor
+from flask_apscheduler import APScheduler
 from config import config
 import locale
 
@@ -13,6 +14,7 @@ mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
 ckeditor = CKEditor()
+scheduler = APScheduler()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
@@ -36,6 +38,8 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     ckeditor.init_app(app)
+    scheduler.init_app(app)
+    scheduler.start()
     from app.admin import app_admin
     app_admin.init_app(app)
 

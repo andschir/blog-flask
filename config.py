@@ -25,6 +25,8 @@ class Config:
     UPLOADED_PATH_IMAGES = os.path.join(basedir, 'uploads/img/')
 
     SSL_REDIRECT = False
+
+    SCHEDULER_API_ENABLED = True
     
     @staticmethod
     def init_app(app):
