@@ -17,7 +17,7 @@
 <div class="container mb-3">
   <div class="page-header row mx-auto">
     {% if current_user.can(Permission.WRITE) %}
-    <h2>Новая запись</h2>
+    <h2>Создание записи</h2>
     {% else %}
     <h1>Read-only: У вас нет разрешения создавать записи</h1>
     {% endif %}
@@ -51,14 +51,11 @@
         <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>
     </div>
     <div class="row mx-auto mt-3 text-center">
-      <div class="form-group">
-        <span>{{ form.status.label(class='control-label') }} {{ form.status }}</span>
-      </div>
       <div class="form-group mt-3">
         <div id="saved_successfully"></div>
         <button type="submit" id="btn_publish" class="btn btn-secondary" name="btn_submit" value="publish">Опубликовать</button>
         <button type="submit" id="btn_create_draft" class="btn btn-secondary" name="btn_submit" value="create_draft">Сохранить как черновик</button>
-        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Закрыть</a>
+        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Назад</a>
       </div>
     </div>
   </form>

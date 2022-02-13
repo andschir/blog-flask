@@ -47,7 +47,7 @@ $(document).ready(function() {
         if (!!firstImage) {
           parent.style.height = needed_height;
         } else {
-          parent.style.height = '5em';
+          parent.style.height = '7.5em';
         }
         linkText = "Показать полностью";
       }

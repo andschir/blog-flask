@@ -49,10 +49,36 @@
   </div>
 </div>
 <h3>Записи {{ user.username }}</h3>
+<!--TODO: add if for non users -->
+{% if current_user.username == user.username %}
+<div class="post-tabs">
+  <ul class="nav nav-tabs mt-3">
+    <li class="nav-item">
+      <a class="nav-link {% if  show_category == 'public' %} active{% endif %}" href="{{ url_for('.show_public') }}">
+      Опубликованные</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if  show_category == 'drafts' %} active{% endif %}" href="{{ url_for('.show_drafts') }}">
+      Черновики</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if  show_category == 'hidden' %} active{% endif %}" href="{{ url_for('.show_hidden') }}">
+      Скрытые из ленты</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if  show_category == 'deleted' %} active{% endif %}" href="{{ url_for('.show_deleted') }}">
+      Удаленные</a>
+    </li>
+  </ul>
+  {% set showhide = 'hide' %}
+  {% include '_posts.html' %}
+</div>
+{% else %}
 {% set showhide = 'hide' %}
 {% include '_posts.html' %}
+{% endif %}
 {% if pagination %}
-<div class="d-flex justify-content-center pagination">
+<div class="d-flex justify-content-center pagination mt-3">
   {{ macros.pagination_widget(pagination, '.user', username=user.username) }}
 </div>
 {% endif %}

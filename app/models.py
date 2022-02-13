@@ -268,6 +268,7 @@ class Post(db.Model):
     STATUS_PUBLIC = 0
     STATUS_DRAFT = 1
     STATUS_DELETED = 2
+    STATUS_HIDDEN = 3
 
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)

@@ -4,7 +4,6 @@ from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_pagedown import PageDown
 from flask_ckeditor import CKEditor
 from config import config
 import locale
@@ -13,7 +12,6 @@ bootstrap = Bootstrap5()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
-pagedown = PageDown()
 ckeditor = CKEditor()
 
 login_manager = LoginManager()
@@ -37,7 +35,6 @@ def create_app(config_name):
     moment.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
-    pagedown.init_app(app)
     ckeditor.init_app(app)
     from app.admin import app_admin
     app_admin.init_app(app)

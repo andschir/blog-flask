@@ -74,15 +74,15 @@ class PostForm(FlaskForm):
     title = TextAreaField('Заголовок')
     body = TextAreaField('Текст')
     submit = SubmitField('Создать')
-    status = SelectField(
-        label='Создать:',
-        name='status',
-        choices=(
-            (Post.STATUS_DRAFT, 'новый черновик'),
-            (Post.STATUS_PUBLIC, 'публичную запись')
-        ),
-        coerce=int
-    )
+    # status = SelectField(
+    #     label='Создать:',
+    #     name='status',
+    #     choices=(
+    #         (Post.STATUS_DRAFT, 'новый черновик'),
+    #         (Post.STATUS_PUBLIC, 'публичную запись')
+    #     ),
+    #     coerce=int
+    # )
     tags = TagField('Теги:',
                     render_kw={"placeholder": "Введите теги, разделяя их запятой"})
 

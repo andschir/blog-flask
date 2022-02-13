@@ -14,7 +14,7 @@
 {% block page_content %}
 <div class="container mb-3">
   <div class="page-header row mx-auto">
-    <h1>Редактировать запись</h1>
+    <h1>Редактирование записи #{{ post.id}}</h1>
     <p class="text-danger">{% if current_user.can(Permission.ADMIN) and (current_user != post.author) %} {{ 'Как Администратор' }} {% endif %}</p>
   </div>
   <form action="{{ url_for('.edit', id=post.id) }}" class="form form-group form-horizontal" method="POST">
@@ -46,13 +46,10 @@
         <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>
     </div>
     <div class="row mx-auto mt-3 text-center">
-      <div class="form-group">
-        <span>{{ form.status.label(class='control-label') }} {{ form.status }}</span>
-      </div>
       <div class="form-group mt-3">
-        <button type="submit" id="btn_publish" class="btn btn-primary" name="btn_submit" value="publish" formaction="{{ url_for('main.create') }}">Опубликовать</button>
-        <button type="submit" id="btn_save" class="btn btn-secondary" name="btn_submit" value="save" formaction="{{ url_for('main.post', id=post.id) }}">Сохранить</button>
-        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Закрыть</a>
+        <button type="submit" id="btn_publish" class="btn btn-primary" name="btn_submit" value="publish">Опубликовать</button>
+        <a type="buton" id="btn_save" class="btn btn-secondary"
+                href="{{ url_for('main.post', id=post.id) }}">Сохранить</a>
       </div>
     </div>
   </form>

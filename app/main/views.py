@@ -163,7 +163,7 @@ def create_draft():
 @login_required
 def autosave():
     data = request.json['input_fields']
-    if len(data) > 4 and current_user.can(Permission.WRITE):
+    if len(data) > 3 and current_user.can(Permission.WRITE):
         draft_id = data[-1]
         post = Post.query.get_or_404(draft_id)
         if current_user != post.author:
@@ -171,7 +171,9 @@ def autosave():
                 abort(403)
         post.title = data[0]['value']
         post.body = data[1]['value']
-        post.status = Post.STATUS_DRAFT
+        # if post.status == Post.STATUS_PUBLIC:
+        #     post.status = Post.STATUS_HIDDEN
+        post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
         return {'result': 'draft updated'}
@@ -190,8 +192,6 @@ def edit(id):
         submit_context = request.form.get('btn_submit')
         if submit_context == 'publish':
             status = Post.STATUS_PUBLIC
-        elif submit_context == 'save':
-            status = Post.STATUS_DRAFT
         post.title = form.title.data
         post.body = form.body.data
         post.status = status
@@ -199,13 +199,32 @@ def edit(id):
         post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
-        flash('Запись успешно отредактирована', 'alert_success')
+        if submit_context == 'publish':
+            flash('Запись успешно опубликована', 'alert_success')
+        elif submit_context == 'save':
+            print('save')
+            flash('Запись успешно отредактирована', 'alert_success')
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title
     form.body.data = post.body
     # form.status.data = post.status
     form.tags.data = post.tags
     return render_template('edit_post.html', form=form, post=post)
+
+
+@main.route('/hide_post/<int:id>', methods=['POST'])
+@login_required
+def hide_post(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_HIDDEN
+        db.session.add(post)
+        db.session.commit()
+        flash('Запись успешно скрыта', 'alert_success')
+        return redirect(url_for('.index'))
 
 
 @main.route('/delete/<int:id>', methods=['POST'])
@@ -231,7 +250,7 @@ def recover(id):
             not current_user.can(Permission.ADMIN):
         abort(403)
     if request.method == 'POST':
-        post.status = Post.STATUS_DRAFT
+        post.status = Post.STATUS_HIDDEN
         db.session.add(post)
         db.session.commit()
         flash('Запись успешно восстановлена', 'alert_success')
@@ -246,8 +265,9 @@ def publish(id):
             not current_user.can(Permission.ADMIN):
         abort(403)
     if request.method == 'POST':
+        if post.status != Post.STATUS_HIDDEN:
+            post.refresh_timestamp()
         post.status = Post.STATUS_PUBLIC
-        post.refresh_timestamp()
         db.session.add(post)
         db.session.commit()
         flash('Запись успешно опубликована', 'alert_success')
@@ -283,14 +303,29 @@ def tag_detail(slug):
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     page = request.args.get('page', 1, type=int)
-    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
+    query = user.posts.order_by(Post.timestamp.desc())
+    if not current_user.is_authenticated or \
+            current_user.username != user.username:
+        query = query.filter_by(status=Post.STATUS_PUBLIC)
+    show = False
+    if current_user.is_authenticated:
+        show = request.cookies.get('show_category')
+        if show == 'public':
+            query = query.filter_by(status=Post.STATUS_PUBLIC)
+        elif show == 'drafts':
+            query = query.filter_by(status=Post.STATUS_DRAFT)
+        elif show == 'hidden':
+            query = query.filter_by(status=Post.STATUS_HIDDEN)
+        elif show == 'deleted':
+            query = query.filter_by(status=Post.STATUS_DELETED)
+    pagination = query.paginate(
         page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
         error_out=False)
     posts = pagination.items
     active_profile = ''
     if user == current_user:
         active_profile = 'active'
-    return render_template('user.html', user=user, posts=posts,
+    return render_template('user.html', user=user, posts=posts, show_category=show,
                            pagination=pagination, active_profile=active_profile)
 
 
@@ -421,6 +456,38 @@ def show_all():
 def show_followed():
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('show_followed', '1', max_age=30*24*60*60)
+    return resp
+
+
+@main.route('/public')
+@login_required
+def show_public():
+    resp = make_response(redirect(url_for('.user', username=current_user.username)))
+    resp.set_cookie('show_category', 'public', max_age=30*24*60*60)
+    return resp
+
+
+@main.route('/drafts')
+@login_required
+def show_drafts():
+    resp = make_response(redirect(url_for('.user', username=current_user.username)))
+    resp.set_cookie('show_category', 'drafts', max_age=30*24*60*60)
+    return resp
+
+
+@main.route('/hidden')
+@login_required
+def show_hidden():
+    resp = make_response(redirect(url_for('.user', username=current_user.username)))
+    resp.set_cookie('show_category', 'hidden', max_age=30*24*60*60)
+    return resp
+
+
+@main.route('/deleted')
+@login_required
+def show_deleted():
+    resp = make_response(redirect(url_for('.user', username=current_user.username)))
+    resp.set_cookie('show_category', 'deleted', max_age=30*24*60*60)
     return resp
 
 

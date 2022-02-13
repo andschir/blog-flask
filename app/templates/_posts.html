@@ -40,9 +40,11 @@
           <a style="display: inline;" href="{{ url_for('.post', id=post.id) }}">
             <span class="label label-default">
               {% if post.status == post.STATUS_DELETED %}
-                [Удаленная]
+                [Удалено]
               {% elif post.status == post.STATUS_DRAFT %}
                 [Черновик]
+              {% elif post.status == post.STATUS_HIDDEN %}
+                [Скрыто]
               {% endif %}
               Запись #{{ post.id }}
             </span>
@@ -109,13 +111,18 @@
                 <button type="submit" class="post-button btn-sm btn-secondary">Восстановить</button>
               </form>
             {% else %}
+              {% if post.status == post.STATUS_PUBLIC %}
+                <form method="POST" action="{{ url_for('main.hide_post', id=post.id) }}">
+                  <button type="submit" class="post-button btn-sm btn-info">Скрыть</button>
+                </form>
+              {% endif %}
               <form method="get" action="{{ url_for('main.edit', id=post.id) }}">
                 <button type="submit" class="post-button btn-sm btn-secondary">Редактировать</button>
               </form>
               <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
                 <button type="submit" class="post-button btn-sm btn-danger">Удалить</button>
               </form>
-                {% if post.status == post.STATUS_DRAFT %}
+                {% if post.status == post.STATUS_DRAFT or post.status == post.STATUS_HIDDEN %}
                   <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
                     <button type="submit" class="post-button btn-sm btn-success">Опубликовать</button>
                   </form>

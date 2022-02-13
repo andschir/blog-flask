@@ -15,23 +15,30 @@
     {% endif %}!</h4>
 </div>
 <div class="post-tabs">
-  <ul class="nav nav-tabs mt-3">
-    <li class="nav-item">
-      <a class="nav-link{% if not show_followed %} active{% endif %}" href="{{ url_for('.show_all') }}">
-      Все</a>
-    </li>
-    {% if current_user.is_authenticated %}
-    <li class="nav-item">
-      <a class="nav-link{% if  show_followed %} active{% endif %}" href="{{ url_for('.show_followed') }}">
-        Подписки</a>
-    </li>
+  <div class="d-flex mt-3">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link{% if not show_followed %} active{% endif %}" href="{{ url_for('.show_all') }}">
+          Все</a>
+      </li>
+      {% if current_user.is_authenticated %}
+      <li class="nav-item">
+        <a class="nav-link{% if  show_followed %} active{% endif %}" href="{{ url_for('.show_followed') }}">
+          Подписки</a>
+      </li>
+      {% endif %}
+    </ul>
+    {% if pagination %}
+    <div class="justify-content-center pagination ms-auto">
+      {{ macros.pagination_widget(pagination, '.index') }}
+    </div>
     {% endif %}
-  </ul>
+  </div>
   {% set showhide = 'hide' %}
   {% include '_posts.html' %}
 </div>
 {% if pagination %}
-<div class="d-flex justify-content-center pagination">
+<div class="d-flex justify-content-center pagination mt-3">
   {{ macros.pagination_widget(pagination, '.index') }}
 </div>
 {% endif %}

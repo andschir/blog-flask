@@ -23,11 +23,13 @@ $(document).ready(function() {
               if (countCharacters(editor.model.document) > 0) {
                 document.querySelector('#title_empty').innerText = '';
                 document.querySelector('#editor-autosave-status').classList.add( 'busy' );
+                displayStatus(editor);
               };
               setTimeout( () => {
                 editorBody.config._config.autosave.save(editorBody);
                 document.querySelector('#editor-autosave-status').classList.remove( 'busy' );
-                }, 5000
+                displayStatus(editor);
+                }, 3000
               );
             });
             window.editorTitle = editor;
@@ -55,14 +57,13 @@ $(document).ready(function() {
                 ]
             },
             autosave: {
-              waitingTime: 5000,
+              waitingTime: 3000,
               save( editor ) {
               // TODO: move operations to function
                 inputFields = $(".form").serializeArray();
                 inputFields.splice(0, 1); // delete CSRF token
                 inputFields[0].value = editorTitle.getData(); // replace Title and Body with cke data
                 inputFields[1].value = editorBody.getData();
-
                 if (editorTitle.getData() && editorBody.getData()) {
                   return saveData( inputFields );
                 }
@@ -167,12 +168,27 @@ $(document).ready(function() {
     function displayStatus( editor ) {
         const pendingActions = editor.plugins.get( 'PendingActions' );
         const statusIndicator = document.querySelector('#editor-autosave-status');
+        btn_save = document.querySelector('#btn_save')
+
+        if (!!btn_save) {
+          if (statusIndicator.hidden == false && statusIndicator.classList.contains('busy')) {
+            btn_save.classList.add( 'disabled' );
+          } else {
+            btn_save.classList.remove( 'disabled' );
+          }
+        }
 
         pendingActions.on( 'change:hasAny', ( evt, propertyName, newValue ) => {
             if ( newValue ) {
                 statusIndicator.classList.add( 'busy' );
+                if (!!btn_save && statusIndicator.hidden == false) {
+                  btn_save.classList.add( 'disabled' );
+                }
             } else {
                 statusIndicator.classList.remove( 'busy' );
+                if (!!btn_save && statusIndicator.hidden == false) {
+                  btn_save.classList.remove( 'disabled' );
+                }
             }
         } );
     }
@@ -214,8 +230,6 @@ $(document).ready(function() {
         } );
     }
 
-
-
     if ( window.location.href.match(/edit/) ) {
       postId = window.location.href.substring(window.location.href.lastIndexOf('/') + 1).slice(0, -1);
       draftId = postId;
@@ -226,8 +240,6 @@ $(document).ready(function() {
         createDraft();
       });
     }
-
-
 
     // Validating: no empty fields
     $(".form").submit(function(e) {

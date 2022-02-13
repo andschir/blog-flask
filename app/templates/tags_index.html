@@ -14,7 +14,7 @@
     <div class="input-group mb-3">
       <button type="submit" class="btn btn-outline-secondary">Поиск</button>
       <input required class="form-control" type="search" name="t"
-             value="{{ request.args.get('t', '') }}" aria-label="Search">
+             value="{{ request.args.get('t', '') }}" aria-label="Search" autocomplete="off">
     </div>
   </form>
 </div>
