@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
     CommentForm
-from .. import db
+from .. import db, scheduler
 from ..models import Permission, Role, User, Post, Comment, Tag
 from ..decorators import admin_required, permission_required
 
@@ -127,12 +127,24 @@ def post(id):
                            comments=comments, pagination=pagination)
 
 
+def scheduled_task(post_number):
+    # TODO: clear refresh timestamp
+    with scheduler.app.app_context():
+        print(f'published Post #{post_number}')
+        id = post_number
+        post = Post.query.get_or_404(id)
+        if post.status != Post.STATUS_HIDDEN:
+            post.refresh_timestamp()
+        post.status = Post.STATUS_PUBLIC
+        db.session.add(post)
+        db.session.commit()
+
+
 @main.route('/postpone', methods=['POST'])
 @login_required
 def postpone():
     form = PostForm()
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
-        # req = request.args.get('dateTimePicker')
         req = request.form.get("dateTimePicker")
         print(req)
         date = datetime.datetime.strptime(req, '%d.%m.%Y, %H:%M')
@@ -148,7 +160,7 @@ def postpone():
         print(post.id)
         post_number = post.id
         current_app.apscheduler.add_job(func=scheduled_task, trigger=DateTrigger(date), args=[post_number],
-                                        id='job#' + str(post_number))
+                                        id='job#' + str(post_number), misfire_grace_time=30*60)
         flash('Запись успешно создана', 'alert_success')
         return redirect(url_for('.post', id=post.id))
     return make_response(200)
@@ -621,12 +633,7 @@ def mention():
     ]
     return {'result': results}
 
-
-@main.route('/test')
-def welcome():
-    return 'Welcome to flask_apscheduler demo', 200
-
-
+# TODO: clear
 from apscheduler.triggers.date import DateTrigger
 @main.route('/run-tasks')
 def run_tasks():
@@ -637,12 +644,5 @@ def run_tasks():
     return 'Scheduled several long running tasks.', 200
 
 
-def scheduled_task(post_number):
-    print(f'published Post #{post_number}')
-    # post = Post.query.get_or_404(id)
-    # if post.status != Post.STATUS_HIDDEN:
-    #     post.refresh_timestamp()
-    # post.status = Post.STATUS_PUBLIC
-    # db.session.add(post)
-    # db.session.commit()
+
 

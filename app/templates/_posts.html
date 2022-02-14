@@ -98,7 +98,7 @@
           <a href="#"></a>
         </div>
         <div class="mt-1 fw-light fst-italic post-edited">
-          {% if post.timestamp_modified.strftime('%m %d %Y %H %M %S') != post.timestamp.strftime('%m %d %Y %H %M %S') %}
+          {% if post.timestamp_modified.strftime('%m %d %Y %H %M %S') > post.timestamp.strftime('%m %d %Y %H %M %S') %}
             Изменено: {{ moment(post.timestamp_modified).fromNow() }}
           {% endif %}
         </div>

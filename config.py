@@ -1,4 +1,5 @@
 import os
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -37,12 +38,18 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+    SCHEDULER_JOBSTORES = {
+        "default": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
+    }
 
 
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
         'sqlite://'
+    SCHEDULER_JOBSTORES = {
+        "default": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
+    }
 
 
 class ProductionConfig(Config):
@@ -53,6 +60,9 @@ class ProductionConfig(Config):
 
     SQLALCHEMY_DATABASE_URI = database_path or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+    SCHEDULER_JOBSTORES = {
+        "default": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
+    }
 
     @classmethod
     def init_app(cls, app):
