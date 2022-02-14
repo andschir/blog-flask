@@ -18,6 +18,8 @@ from werkzeug.exceptions import RequestEntityTooLarge
 import uuid
 from PIL import Image, ImageDraw, ImageFont
 
+import datetime
+
 
 def add_copyright(response, filepath, fontpath, ext):
     photo = Image.open(response)
@@ -123,6 +125,33 @@ def post(id):
     comments = pagination.items
     return render_template('post.html', posts=[post], form=form,
                            comments=comments, pagination=pagination)
+
+
+@main.route('/postpone', methods=['POST'])
+@login_required
+def postpone():
+    form = PostForm()
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        # req = request.args.get('dateTimePicker')
+        req = request.form.get("dateTimePicker")
+        print(req)
+        date = datetime.datetime.strptime(req, '%d.%m.%Y, %H:%M')
+        print(date)
+        status = Post.STATUS_DRAFT
+        post = Post(title=form.title.data,
+                    body=form.body.data,
+                    author=current_user._get_current_object(),
+                    status=status,
+                    tags=form.tags.data)
+        db.session.add(post)
+        db.session.commit()
+        print(post.id)
+        post_number = post.id
+        current_app.apscheduler.add_job(func=scheduled_task, trigger=DateTrigger(date), args=[post_number],
+                                        id='job#' + str(post_number))
+        flash('Запись успешно создана', 'alert_success')
+        return redirect(url_for('.post', id=post.id))
+    return make_response(200)
 
 
 @main.route('/create', methods=['GET', 'POST'])
@@ -597,7 +626,7 @@ def mention():
 def welcome():
     return 'Welcome to flask_apscheduler demo', 200
 
-import datetime
+
 from apscheduler.triggers.date import DateTrigger
 @main.route('/run-tasks')
 def run_tasks():
@@ -610,3 +639,10 @@ def run_tasks():
 
 def scheduled_task(post_number):
     print(f'published Post #{post_number}')
+    # post = Post.query.get_or_404(id)
+    # if post.status != Post.STATUS_HIDDEN:
+    #     post.refresh_timestamp()
+    # post.status = Post.STATUS_PUBLIC
+    # db.session.add(post)
+    # db.session.commit()
+

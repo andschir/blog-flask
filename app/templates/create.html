@@ -53,7 +53,16 @@
     <div class="row mx-auto mt-3 text-center">
       <div class="form-group mt-3">
         <div id="saved_successfully"></div>
-        <button type="submit" id="btn_publish" class="btn btn-secondary" name="btn_submit" value="publish">Опубликовать</button>
+        <div hidden class='input-group' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
+          <input id='datetimepicker1Input' type='text' class='form-control' data-td-target='#datetimepicker1' name="dateTimePicker"/>
+          <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
+            <span class='fas fa-calendar'></span>
+          </span>
+        </div>
+        <button type="button" id="btn_show" class="btn btn-secondary">show</button>
+        <button type="submit" id="btn_postpone" class="btn btn-secondary" name="btn_submit" value="postpone"
+                formaction="{{ url_for('main.postpone') }}">Опубликовать позже</button>
+        <button type="submit" id="btn_publish" class="btn btn-secondary" name="btn_submit" value="publish">Опубликовать сейчас</button>
         <button type="submit" id="btn_create_draft" class="btn btn-secondary" name="btn_submit" value="create_draft">Сохранить как черновик</button>
         <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Назад</a>
       </div>
@@ -61,4 +70,35 @@
   </form>
 </div>
 {% endif %}
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script>
+    const picker = new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'), {
+      hooks: {
+        inputFormat: (context, date) => {
+          return moment(date).format('DD.MM.YYYY, HH:mm')
+        }
+      },
+      display: {
+        viewMode: 'clock',
+        components: {
+          decades: false,
+          year: false,
+          month: true,
+          date: true,
+          hours: true,
+          minutes: true,
+          seconds: false,
+          useTwentyfourHour: true,
+        }
+      },
+      stepping: 1,
+    });
+
+    document.getElementById('btn_show').addEventListener('click', (event) => {
+      document.getElementById('datetimepicker1').hidden = false;
+      console.log(picker.viewDate);
+    });
+  </script>
 {% endblock %}
