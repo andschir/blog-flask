@@ -269,6 +269,8 @@ def edit(id):
         submit_context = request.form.get('btn_submit')
         if submit_context == 'publish':
             status = Post.STATUS_PUBLIC
+        elif submit_context == 'save':
+            status = post.status
         post.title = form.title.data
         post.body = form.body.data
         post.status = status
@@ -276,6 +278,7 @@ def edit(id):
         post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
+        postpone_cancel(id)
         if submit_context == 'publish':
             flash('Запись успешно опубликована', 'alert_success')
         elif submit_context == 'save':
