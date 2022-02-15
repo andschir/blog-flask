@@ -19,6 +19,8 @@ import uuid
 from PIL import Image, ImageDraw, ImageFont
 
 import datetime
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.jobstores.base import JobLookupError
 
 
 def add_copyright(response, filepath, fontpath, ext):
@@ -149,7 +151,7 @@ def postpone():
         print(req)
         date = datetime.datetime.strptime(req, '%d.%m.%Y, %H:%M')
         print(date)
-        status = Post.STATUS_DRAFT
+        status = Post.STATUS_POSTPONED
         post = Post(title=form.title.data,
                     body=form.body.data,
                     author=current_user._get_current_object(),
@@ -158,12 +160,36 @@ def postpone():
         db.session.add(post)
         db.session.commit()
         print(post.id)
-        post_number = post.id
-        current_app.apscheduler.add_job(func=scheduled_task, trigger=DateTrigger(date), args=[post_number],
-                                        id='job#' + str(post_number), misfire_grace_time=30*60)
-        flash('Запись успешно создана', 'alert_success')
+        current_app.apscheduler.add_job(func=scheduled_task, trigger=DateTrigger(date), args=[post.id],
+                                        id=str(post.id), name='job#' + str(post.id), misfire_grace_time=30*60)
+        flash('Запись успешно отложена', 'alert_success')
         return redirect(url_for('.post', id=post.id))
     return make_response(200)
+
+
+def postpone_cancel(id):
+    try:
+        print('canceled id:' + str(id))
+        current_app.apscheduler.remove_job(id)
+    except JobLookupError:
+        flash('Задача не удалена, так как не найдена!', 'alert_error')
+
+
+@main.route('/postpone_remove/<int:id>', methods=['POST'])
+@login_required
+def postpone_remove(id):
+    post = Post.query.get_or_404(id)
+    if current_user != post.author and \
+            not current_user.can(Permission.ADMIN):
+        abort(403)
+    if request.method == 'POST':
+        post.status = Post.STATUS_DRAFT
+        db.session.add(post)
+        db.session.commit()
+        print('postponed: ' + str(id) + '. type: '+ str(type(id)))
+        postpone_cancel(id)
+        flash('Запись успешно перемещена из отложенных в черновики', 'alert_success')
+        return redirect(url_for('.index'))
 
 
 @main.route('/create', methods=['GET', 'POST'])
@@ -172,8 +198,17 @@ def create():
     form = PostForm()
     if current_user.can(Permission.WRITE) and form.validate_on_submit():
         submit_context = request.form.get('btn_submit')
+        # TODO: refactor 'if' and Post creation
         if submit_context == 'publish':
             status = Post.STATUS_PUBLIC
+        elif submit_context == 'publish_draft':
+            post = Post.query.get_or_404(current_user.posts[-1].id)
+            post.status = Post.STATUS_PUBLIC
+            post.tags = form.tags.data
+            db.session.add(post)
+            db.session.commit()
+            flash('Запись успешно создана', 'alert_success')
+            return redirect(url_for('.post', id=post.id))
         else:
             status = Post.STATUS_DRAFT
         post = Post(title=form.title.data,
@@ -229,6 +264,7 @@ def edit(id):
         if not current_user.can(Permission.ADMIN):
             abort(403)
     form = PostForm()
+    date = ''
     if form.validate_on_submit():
         submit_context = request.form.get('btn_submit')
         if submit_context == 'publish':
@@ -248,9 +284,10 @@ def edit(id):
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title
     form.body.data = post.body
-    # form.status.data = post.status
     form.tags.data = post.tags
-    return render_template('edit_post.html', form=form, post=post)
+    if job := current_app.apscheduler.get_job(id):
+        date = str(job.trigger.run_date)
+    return render_template('edit_post.html', form=form, post=post, date=date)
 
 
 @main.route('/hide_post/<int:id>', methods=['POST'])
@@ -276,9 +313,13 @@ def delete(id):
             not current_user.can(Permission.ADMIN):
         abort(403)
     if request.method == 'POST':
+        status = post.status
         post.status = Post.STATUS_DELETED
         db.session.add(post)
         db.session.commit()
+        if status == Post.STATUS_POSTPONED:
+            print(str(id))
+            postpone_cancel(id)
         flash('Запись успешно удалена', 'alert_success')
         return redirect(url_for('.index'))
 
@@ -306,11 +347,14 @@ def publish(id):
             not current_user.can(Permission.ADMIN):
         abort(403)
     if request.method == 'POST':
+        status = post.status
         if post.status != Post.STATUS_HIDDEN:
             post.refresh_timestamp()
         post.status = Post.STATUS_PUBLIC
         db.session.add(post)
         db.session.commit()
+        if status == Post.STATUS_POSTPONED:
+            postpone_cancel(id)
         flash('Запись успешно опубликована', 'alert_success')
         return redirect(url_for('.index'))
 
@@ -355,6 +399,8 @@ def user(username):
             query = query.filter_by(status=Post.STATUS_PUBLIC)
         elif show == 'drafts':
             query = query.filter_by(status=Post.STATUS_DRAFT)
+        elif show == 'postponed':
+            query = query.filter_by(status=Post.STATUS_POSTPONED)
         elif show == 'hidden':
             query = query.filter_by(status=Post.STATUS_HIDDEN)
         elif show == 'deleted':
@@ -516,6 +562,14 @@ def show_drafts():
     return resp
 
 
+@main.route('/postponed')
+@login_required
+def show_postponed():
+    resp = make_response(redirect(url_for('.user', username=current_user.username)))
+    resp.set_cookie('show_category', 'postponed', max_age=30*24*60*60)
+    return resp
+
+
 @main.route('/hidden')
 @login_required
 def show_hidden():
@@ -632,17 +686,3 @@ def mention():
         {'id': name, 'username': name[1:]} for name in ['@' + i[0] for i in query.all()]
     ]
     return {'result': results}
-
-# TODO: clear
-from apscheduler.triggers.date import DateTrigger
-@main.route('/run-tasks')
-def run_tasks():
-    after_10s = datetime.datetime.now() + datetime.timedelta(seconds=10)
-    post_number = 8
-    current_app.apscheduler.add_job(func=scheduled_task, trigger=DateTrigger(after_10s), args=[post_number], id='job#' + str(post_number))
-
-    return 'Scheduled several long running tasks.', 200
-
-
-
-

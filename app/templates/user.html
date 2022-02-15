@@ -55,19 +55,23 @@
   <ul class="nav nav-tabs mt-3">
     <li class="nav-item">
       <a class="nav-link {% if  show_category == 'public' %} active{% endif %}" href="{{ url_for('.show_public') }}">
-      Опубликованные</a>
+      Опубликованные ({{ user.posts.filter_by(status=0).count() }})</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if  show_category == 'drafts' %} active{% endif %}" href="{{ url_for('.show_drafts') }}">
-      Черновики</a>
+      Черновики ({{ user.posts.filter_by(status=1).count() }})</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if  show_category == 'postponed' %} active{% endif %}" href="{{ url_for('.show_postponed') }}">
+      Отложенные ({{ user.posts.filter_by(status=4).count() }})</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if  show_category == 'hidden' %} active{% endif %}" href="{{ url_for('.show_hidden') }}">
-      Скрытые из ленты</a>
+      Скрытые из ленты ({{ user.posts.filter_by(status=3).count() }})</a>
     </li>
     <li class="nav-item">
       <a class="nav-link {% if  show_category == 'deleted' %} active{% endif %}" href="{{ url_for('.show_deleted') }}">
-      Удаленные</a>
+      Удаленные ({{ user.posts.filter_by(status=2).count() }})</a>
     </li>
   </ul>
   {% set showhide = 'hide' %}

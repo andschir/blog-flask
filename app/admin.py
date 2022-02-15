@@ -155,7 +155,8 @@ def add_admin_views(app_instance):
             (Post.STATUS_PUBLIC, 'Опубликовано'),
             (Post.STATUS_DRAFT, 'Черновик'),
             (Post.STATUS_DELETED, 'Удалено'),
-            (Post.STATUS_HIDDEN, 'Скрыт'),
+            (Post.STATUS_HIDDEN, 'Скрыто'),
+            (Post.STATUS_POSTPONED, 'Отложено'),
         ]]
         # Restricts col's height by 8em
         list_template = 'admin/post.html'

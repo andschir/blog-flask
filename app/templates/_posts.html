@@ -43,6 +43,8 @@
                 [Удалено]
               {% elif post.status == post.STATUS_DRAFT %}
                 [Черновик]
+              {% elif post.status == post.STATUS_POSTPONED %}
+                [Отложено]
               {% elif post.status == post.STATUS_HIDDEN %}
                 [Скрыто]
               {% endif %}
@@ -122,11 +124,16 @@
               <form method="POST" action="{{ url_for('main.delete', id=post.id) }}">
                 <button type="submit" class="post-button btn-sm btn-danger">Удалить</button>
               </form>
-                {% if post.status == post.STATUS_DRAFT or post.status == post.STATUS_HIDDEN %}
-                  <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
-                    <button type="submit" class="post-button btn-sm btn-success">Опубликовать</button>
-                  </form>
-                {% endif %}
+              {% if post.status == post.STATUS_DRAFT or post.status == post.STATUS_HIDDEN or post.status == post.STATUS_POSTPONED %}
+                <form method="POST" action="{{ url_for('main.publish', id=post.id) }}">
+                  <button type="submit" class="post-button btn-sm btn-success">Опубликовать</button>
+                </form>
+              {% endif %}
+              {% if post.status == post.STATUS_POSTPONED %}
+                <form method="POST" action="{{ url_for('main.postpone_remove', id=post.id) }}">
+                  <button type="submit" class="post-button btn-sm btn-primary">Убрать из отложенных</button>
+                </form>
+              {% endif %}
             {% endif %}
           {% elif current_user.can(Permission.ADMIN) %}
             {% if post.status == post.STATUS_DELETED %}
