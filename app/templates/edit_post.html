@@ -45,30 +45,31 @@
     <div class="row mx-auto mt-3">
         <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>
     </div>
-<!--    <div class="row mx-auto mt-3 text-center">-->
-<!--      <div class="form-group mt-3">-->
-<!--        <button type="submit" id="btn_publish" class="btn btn-primary" name="btn_submit" value="publish">Опубликовать сейчас</button>-->
-<!--        <a type="button" id="btn_save" class="btn btn-secondary"-->
-<!--                href="{{ url_for('main.post', id=post.id) }}">Сохранить</a>-->
-<!--      </div>-->
-<!--    </div>-->
     <div class="row mx-auto mt-3 d-flex">
-      <div id="saved_successfully"></div>
-      <div class="form-group mt-3 w-100 d-grid gap-3 d-sm-flex flex-wrap justify-content-sm-center">
-        {% if not date %}<button type="button" id="btn_show" class="btn btn-secondary">Отложить публикацию</button>{% endif %}
-        <div class="d-flex order-first">
-          <div {% if not date %}hidden{% endif %} class='input-group m-1' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
-            <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
-              <span class='fas fa-calendar'></span>
-            </span>
-            <input id='datetimepicker1Input' type='text' class='form-control' data-td-target='#datetimepicker1' name="dateTimePicker" value="{{ date }}"/>
-          </div>
-          <button {% if not date %}hidden{% endif %} type="submit" id="btn_postpone" class="btn btn-secondary m-1" name="btn_submit" value="postpone"
-                  formaction="{{ url_for('main.postpone') }}">Ок</button>
-        </div>
+      <div class="form-group w-100 d-grid gap-3 d-sm-flex justify-content-sm-center align-items-start">
+        {% if not date %}
+        <button type="button" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"
+                data-bs-auto-close="false">Время публикации</button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" {% if date %} style="width: 340px;" {% endif %}>
+          <li>
+        {% endif %}
+            <div class="d-flex {% if date %}col-sm-5{% endif %}">
+              <div class='input-group {% if not date %}m-1{% endif %}' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
+                <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
+                  <span class='fas fa-calendar'></span>
+                </span>
+                <input type='text' id='datetimepicker1Input' class='form-control' data-td-target='#datetimepicker1' name="dateTimePicker"
+                       placeholder="Введите дату" autocomplete="off" value="{{ date }}"/>
+                <button type="submit" id="btn_postpone" class="btn btn-secondary" name="btn_submit" value="postpone">Отложить</button>
+              </div>
+            </div>
+        {% if not date %}
+          </li>
+        </ul>
+        {% endif %}
         <button type="submit" id="btn_publish" class="btn btn-secondary" name="btn_submit" value="publish">Опубликовать сейчас</button>
         <button type="submit" class="btn btn-secondary" name="btn_submit" value="save">Сохранить</button>
-        <a type="button" id="btn_save" class="btn btn-secondary" href="{{ url_for('main.post', id=post.id) }}">Назад</a>
+        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Назад</a>
       </div>
     </div>
   </form>

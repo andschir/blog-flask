@@ -335,8 +335,18 @@ class Post(db.Model):
         #     value, tags=allowed_tags, attributes=allowed_attrs,
         #     styles=allowed_styles, strip=True))
 
+    @staticmethod
+    def on_changed_status(target, value, oldvalue, initiator):
+        # print(f'target:  {target}')
+        # print(f'value:  {value}')
+        # print(f'oldvalue:  {oldvalue}')
+        # print(f'initiator:  {initiator}')
+        if oldvalue == Post.STATUS_POSTPONED and value != Post.STATUS_POSTPONED:
+            print('status changed from postponed')
+
 
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+db.event.listen(Post.status, 'set', Post.on_changed_status)
 
 
 class Comment(db.Model):

@@ -220,10 +220,10 @@ $(document).ready(function() {
                 url: "/create_draft",
                 success: function ( response ) {
                   resolve( draftId = response.draft_id );
-                  $('#saved_successfully').html('Черновик создан!');
                   document.querySelector('#btn_create_draft').textContent = 'Черновик создан';
                   document.querySelector('#btn_create_draft').disabled = true;
                   document.querySelector('#btn_publish').value = 'publish_draft';
+                  document.querySelector('#btn_postpone').value = 'postpone_draft';
                   document.querySelector('.page-header').textContent = `Черновик #${draftId}`
                   editorBody.config._config.autosave.save(editorBody);
                   document.querySelector('#editor-autosave-status').hidden = false;
