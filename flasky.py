@@ -22,7 +22,7 @@ def check_for_admin():
         if not current_user.is_administrator:
             abort(403)
     if request.path.startswith('/scheduler/'):
-        if not current_user.is_authenticated:
+        if not current_user.is_administrator:
             abort(403)
 
 
