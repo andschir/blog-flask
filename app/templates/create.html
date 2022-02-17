@@ -8,6 +8,7 @@
 <!--      <script src="/static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
   <script src="/static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
   <script src="/static/scripts/cke5.js"></script>
+  <script src="/static/scripts/dateTimePicker.js"></script>
 {% endblock %}
 
 {% block page_content %}
@@ -37,7 +38,7 @@
       </div>
       <div id="editor-autosave-header">
       <div id="editor-autosave-status" class="" hidden>
-           <div id="editor-autosave-status_label">Автосохранение:</div>
+           <div id="editor-autosave-status_label">Автосохранение текста:</div>
                 <div id="editor-autosave-status_spinner">
                      <span id="editor-autosave-status_spinner-label"></span>
                      <span id="editor-autosave-status_spinner-loader"></span>
@@ -74,46 +75,4 @@
   </form>
 </div>
 {% endif %}
-{% endblock %}
-{% block scripts %}
-  {{ super() }}
-  <script>
-    const picker = new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'), {
-      restrictions: {
-        minDate: moment().toISOString()
-      },
-      hooks: {
-        inputFormat: (context, date) => {
-          return moment(date).format('DD.MM.YYYY, HH:mm')
-        }
-      },
-      display: {
-        viewMode: 'clock',
-        components: {
-          decades: false,
-          year: false,
-          month: true,
-          date: true,
-          hours: true,
-          minutes: true,
-          seconds: false,
-          useTwentyfourHour: true,
-        }
-      },
-      stepping: 1,
-    });
-
-<!--    document.getElementById('btn_show').addEventListener('click', (event) => {-->
-<!--      if (document.getElementById('btn_postpone').hidden) {-->
-<!--        document.getElementById('btn_postpone').hidden = false;-->
-<!--        document.getElementById('datetimepicker1').hidden = false;-->
-<!--        document.getElementById('btn_publish').hidden = true;-->
-<!--      } else {-->
-<!--        document.getElementById('btn_postpone').hidden = true;-->
-<!--        document.getElementById('datetimepicker1').hidden = true;-->
-<!--        document.getElementById('btn_publish').hidden = false;-->
-<!--      }-->
-<!--      console.log(picker.viewDate);-->
-<!--    });-->
-  </script>
 {% endblock %}

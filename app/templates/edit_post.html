@@ -9,6 +9,7 @@
 <!--      <script src="/static/ckeditor5-build-classic/build/ckeditor.js"></script>-->
   <script src="/static/ckeditor/node_modules/@andschir/ckeditor5-build-classic-flask/build/ckeditor.js"></script>
   <script src="/static/scripts/cke5.js"></script>
+  <script src="/static/scripts/dateTimePicker.js"></script>
 {% endblock %}
 
 {% block page_content %}
@@ -33,7 +34,7 @@
       </div>
       <div id="editor-autosave-header">
       <div id="editor-autosave-status" class="" hidden>
-           <div id="editor-autosave-status_label">Автосохранение:</div>
+           <div id="editor-autosave-status_label">Автосохранение текста:</div>
                 <div id="editor-autosave-status_spinner">
                      <span id="editor-autosave-status_spinner-label"></span>
                      <span id="editor-autosave-status_spinner-loader"></span>
@@ -47,76 +48,33 @@
     </div>
     <div class="row mx-auto mt-3 d-flex">
       <div class="form-group w-100 d-grid gap-3 d-sm-flex justify-content-sm-center align-items-start">
-        {% if not date %}
-        <button type="button" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"
-                data-bs-auto-close="false">Время публикации</button>
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" {% if date %} style="width: 340px;" {% endif %}>
-          <li>
-        {% endif %}
-            <div class="d-flex {% if date %}col-sm-5{% endif %}">
-              <div class='input-group {% if not date %}m-1{% endif %}' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
-                <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
-                  <span class='fas fa-calendar'></span>
-                </span>
-                <input type='text' id='datetimepicker1Input' class='form-control' data-td-target='#datetimepicker1' name="dateTimePicker"
-                       placeholder="Введите дату" autocomplete="off" value="{{ date }}"/>
-                <button type="submit" id="btn_postpone" class="btn btn-secondary" name="btn_submit" value="postpone">Отложить</button>
+        {% if not (post.status == post.STATUS_HIDDEN or post.status == post.STATUS_PUBLIC) %}
+          {% if not date %}
+          <button type="button" class="btn btn-secondary dropdown-toggle" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"
+                  data-bs-auto-close="false">Время публикации</button>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" {% if date %} style="width: 340px;" {% endif %}>
+            <li>
+          {% endif %}
+              <div class="d-flex {% if date %}col-sm-5{% endif %}">
+                <div class='input-group {% if not date %}m-1{% endif %}' id='datetimepicker1' data-td-target-input='nearest' data-td-target-toggle='nearest'>
+                  <span class='input-group-text' data-td-target='#datetimepicker1' data-td-toggle='datetimepicker'>
+                    <span class='fas fa-calendar'></span>
+                  </span>
+                  <input type='text' id='datetimepicker1Input' class='form-control' data-td-target='#datetimepicker1' name="dateTimePicker"
+                         placeholder="Введите дату" autocomplete="off" value="{{ date }}"/>
+                  {% if not date %}
+                  <button type="submit" id="btn_postpone" class="btn btn-secondary" name="btn_submit" value="postpone">Отложить</button>
+                  {% endif %}
+                </div>
               </div>
-            </div>
-        {% if not date %}
-          </li>
-        </ul>
+          {% if not date %}
+            </li>
+          </ul>
+          {% endif %}
         {% endif %}
-        <button type="submit" id="btn_publish" class="btn btn-secondary" name="btn_submit" value="publish">Опубликовать сейчас</button>
         <button type="submit" class="btn btn-secondary" name="btn_submit" value="save">Сохранить</button>
-        <a type="button" id="btn_return" class="btn btn-danger" href="{{ url_for('main.index') }}">Назад</a>
       </div>
     </div>
   </form>
 </div>
-{% endblock %}
-
-{% block scripts %}
-  {{ super() }}
-  <script>
-    const picker = new tempusDominus.TempusDominus(document.getElementById('datetimepicker1'), {
-      restrictions: {
-        minDate: moment().toISOString()
-      },
-      hooks: {
-        inputFormat: (context, date) => {
-          return moment(date).format('DD.MM.YYYY, HH:mm')
-        }
-      },
-      display: {
-        viewMode: 'clock',
-        components: {
-          decades: false,
-          year: false,
-          month: true,
-          date: true,
-          hours: true,
-          minutes: true,
-          seconds: false,
-          useTwentyfourHour: true,
-        }
-      },
-      stepping: 1,
-    });
-
-    if (!!document.getElementById('btn_show')) {
-      document.getElementById('btn_show').addEventListener('click', (event) => {
-        if (document.getElementById('btn_postpone').hidden) {
-          document.getElementById('btn_postpone').hidden = false;
-          document.getElementById('datetimepicker1').hidden = false;
-          document.getElementById('btn_publish').hidden = true;
-        } else {
-          document.getElementById('btn_postpone').hidden = true;
-          document.getElementById('datetimepicker1').hidden = true;
-          document.getElementById('btn_publish').hidden = false;
-        }
-        console.log(picker.viewDate);
-      });
-    }
-  </script>
 {% endblock %}

@@ -136,10 +136,10 @@ def add_admin_views(app_instance):
     class PostModelView(RestrictedAccess, ModelView):
         def _id_formatter(view, context, model, name):
             if name == 'id':
-                edit_url = url_for('main.edit', id=model.id)
+                edit_url = url_for('main.post', id=model.id)
                 html = '''<p>{id}</p>
                 <a href="{url}">
-                    <span class="label label-default">Редактировать запись</span>
+                    <span class="label label-default">Открыть запись</span>
                 </a>
                 '''.format(id=model.id, url=edit_url)
 
@@ -188,7 +188,10 @@ def add_admin_views(app_instance):
             'timestamp_modified': 'Дата изменения',
             'author.username': 'Автор',
             'title': 'Заголовок',
-            'body': 'Текст'
+            'body': 'Текст',
+            'comments': 'Комментарии',
+            'tags': 'Теги',
+            'author': 'Автор'
         }
         column_formatters = {
             'id': _id_formatter,
@@ -196,7 +199,7 @@ def add_admin_views(app_instance):
             'body': _html_formatter
         }
         form_columns = [
-            'comments', 'status', 'timestamp', 'timestamp_modified', 'author'
+            'comments', 'tags', 'status', 'timestamp', 'timestamp_modified', 'author'
         ]
         form_overrides = {'status': SelectField}
         form_args = {
@@ -232,6 +235,8 @@ def add_admin_views(app_instance):
             'id': 'Порядковый номер',
             'name': 'Название тега',
             'tags_count': 'Количество записей с этим тегом',
+            'slug': 'Slug',
+            'posts': 'Связанные записи'
         }
         column_sortable_list = (
             'id', 'name', 'tags_count'
@@ -241,6 +246,9 @@ def add_admin_views(app_instance):
         ]
         column_searchable_list = [
             'name'
+        ]
+        form_columns = [
+            'name', 'slug', 'posts'
         ]
         form_widget_args = {
             'slug': {
@@ -280,6 +288,8 @@ def add_admin_views(app_instance):
             'body': 'Текст',
             'timestamp': 'Дата создания',
             'status': 'Статус',
+            'author': 'Автор',
+            'post': 'Связанная запись'
         }
         column_choices = {
             'status': _status_choices,
@@ -296,6 +306,9 @@ def add_admin_views(app_instance):
         column_formatters = {
             'post_id': _post_id_formatter,
         }
+        form_columns = [
+            'body', 'status', 'timestamp', 'author', 'post'
+        ]
         form_overrides = {'status': SelectField}
         form_args = {
             'status': {
@@ -334,4 +347,5 @@ def add_admin_views(app_instance):
     app_admin.add_view(UploadFileAdmin(
         app_instance.config['UPLOADS_DIR'], name='Загруженные файлы'))
 
+    app_admin.add_link(MenuLink(name='APScheduler Jobs', url='/scheduler/jobs'))
     app_admin.add_link(MenuLink(name='Выход', url='/'))

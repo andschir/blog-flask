@@ -1,5 +1,3 @@
-import io
-
 from flask import render_template, redirect, url_for, abort, flash, request,\
     current_app, make_response, jsonify
 from flask_login import login_required, current_user
@@ -20,7 +18,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 import datetime
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.jobstores.base import JobLookupError
 
 
 def add_copyright(response, filepath, fontpath, ext):
@@ -134,7 +131,6 @@ def postpone_cancel(post_id):
         return (job for job in current_app.apscheduler.get_jobs() if job.id == str(id))
     if any(check_job(post_id)):
         current_app.apscheduler.remove_job(next(check_job(post_id)).id)
-        print('canceled job id:' + str(id))
 
 
 @main.route('/postpone_remove/<int:id>', methods=['POST'])
@@ -150,18 +146,16 @@ def postpone_remove(id):
         db.session.commit()
         postpone_cancel(id)
         flash('Запись успешно перемещена из отложенных в черновики', 'alert_success')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.post', id=id))
 
 
 def task_publish(id):
     with scheduler.app.app_context():
         post = Post.query.get_or_404(id)
-        if post.status != Post.STATUS_HIDDEN:
-            post.refresh_timestamp()
+        post.refresh_timestamp()
         post.status = Post.STATUS_PUBLIC
         db.session.add(post)
         db.session.commit()
-        print(f'published Post #{id}')
 
 
 @main.route('/create', methods=['GET', 'POST'])
@@ -172,8 +166,8 @@ def create():
         submit_value = request.form.get('btn_submit')
         if 'postpone' in submit_value:
             status = Post.STATUS_POSTPONED
-            req = request.form.get("dateTimePicker")
-            publish_date = datetime.datetime.strptime(req, '%d.%m.%Y, %H:%M')
+            date_value = request.form.get("dateTimePicker")
+            publish_date = datetime.datetime.strptime(date_value, '%d.%m.%Y, %H:%M')
             message = 'отложена'
         else:
             status = Post.STATUS_PUBLIC
@@ -221,22 +215,21 @@ def create_draft():
 def autosave():
     data = request.json['input_fields']
     if len(data) > 3 and current_user.can(Permission.WRITE):
-        draft_id = data[-1]
-        post = Post.query.get_or_404(draft_id)
+        post_id = data[-1]
+        post = Post.query.get_or_404(post_id)
         if current_user != post.author:
             if not current_user.can(Permission.ADMIN):
                 abort(403)
         post.title = data[0]['value']
         post.body = data[1]['value']
-        # if post.status == Post.STATUS_PUBLIC:
-        #     post.status = Post.STATUS_HIDDEN
-        post.refresh_timestamp_modified()
+        if post.status != Post.STATUS_DRAFT:
+            post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
         return {'result': 'draft updated'}
     return {'result': data}
 
-# TODO: refactor edit view, test all cases
+
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit(id):
@@ -248,23 +241,35 @@ def edit(id):
     date = ''
     if form.validate_on_submit():
         submit_value = request.form.get('btn_submit')
-        if submit_value == 'publish':
-            status = Post.STATUS_PUBLIC
-        elif submit_value == 'save':
+        if date_value := request.form.get("dateTimePicker"):
+            publish_date = datetime.datetime.strptime(date_value, '%d.%m.%Y, %H:%M')
+        if submit_value == 'save':
             status = post.status
+            message = 'отредактирована'
+        elif submit_value == 'postpone':
+            status = Post.STATUS_POSTPONED
+            message = 'отложена'
         post.title = form.title.data
         post.body = form.body.data
         post.status = status
         post.tags = form.tags.data
-        post.refresh_timestamp_modified()
+        if post.status != Post.STATUS_DRAFT:
+            post.refresh_timestamp_modified()
         db.session.add(post)
         db.session.commit()
-        postpone_cancel(id)
-        if submit_value == 'publish':
-            flash('Запись успешно опубликована', 'alert_success')
-        elif submit_value == 'save':
-            print('save')
-            flash('Запись успешно отредактирована', 'alert_success')
+
+        if post.status != Post.STATUS_POSTPONED:
+            postpone_cancel(id)
+        else:
+            if submit_value == 'save':
+                current_app.apscheduler.modify_job(id, trigger='date', run_date=publish_date)
+
+        if submit_value == 'postpone':
+            current_app.apscheduler.add_job(
+                func=task_publish, trigger=DateTrigger(publish_date), args=[post.id],
+                id=str(post.id), name='job#' + str(post.id), misfire_grace_time=30 * 60)
+
+        flash(f'Запись успешно {message}', 'alert_success')
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title
     form.body.data = post.body
@@ -286,7 +291,7 @@ def hide_post(id):
         db.session.add(post)
         db.session.commit()
         flash('Запись успешно скрыта', 'alert_success')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.post', id=id))
 
 
 @main.route('/delete/<int:id>', methods=['POST'])
@@ -317,7 +322,7 @@ def recover(id):
         db.session.add(post)
         db.session.commit()
         flash('Запись успешно восстановлена', 'alert_success')
-        return redirect(url_for('.index'))
+        return redirect(url_for('.post', id=id))
 
 
 @main.route('/publish/<int:id>', methods=['POST'])

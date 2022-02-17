@@ -6,10 +6,16 @@
 }
 .profile-header {
     min-height: 260px;
-    margin-left: 280px;
+
 }
 .profile-header a {
     color: #767676;
+}
+.profile-header .btn {
+    color: white;
+}
+.profile-thumbnail {
+
 }
 ul.posts {
     list-style-type: none;

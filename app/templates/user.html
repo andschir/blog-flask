@@ -4,9 +4,11 @@
 {% block title %}Flasky - {{ user.username }}{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
-  <img class="rounded-circle profile-thumbnail" src="{{ user.gravatar(size=256) }}">
-  <div class="profile-header">
+<div class="page-header d-flex flex-wrap">
+  <div class="h-100 col">
+    <img class="rounded-circle profile-thumbnail" src="{{ user.gravatar(size=256) }}">
+  </div>
+  <div class="profile-header col-sm-5">
     <h1>{{ user.username }}</h1>
     {% if user.name or user.location %}
     <p>
@@ -49,7 +51,7 @@
   </div>
 </div>
 <h3>Записи {{ user.username }}</h3>
-<!--TODO: add if for non users -->
+<!--TODO: add if for non users (may be its already fixed in main.user view -->
 {% if current_user.username == user.username %}
 <div class="post-tabs">
   <ul class="nav nav-tabs mt-3">

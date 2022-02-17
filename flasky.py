@@ -3,6 +3,8 @@ import click
 from flask_migrate import Migrate, upgrade
 from app import create_app, db
 from app.models import User, Follow, Role, Permission, Post, Comment, Tag
+from flask import request, abort
+from flask_login import current_user
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 migrate = Migrate(app, db)
@@ -12,6 +14,16 @@ migrate = Migrate(app, db)
 def make_shell_context():
     return dict(db=db, User=User, Follow=Follow, Role=Role,
                 Permission=Permission, Post=Post, Comment=Comment, Tag=Tag)
+
+
+@app.before_request
+def check_for_admin():
+    if request.path.startswith('/admin/'):
+        if not current_user.is_administrator:
+            abort(403)
+    if request.path.startswith('/scheduler/'):
+        if not current_user.is_authenticated:
+            abort(403)
 
 
 @app.cli.command()
