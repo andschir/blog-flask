@@ -1,3 +1,5 @@
-"scripts": {
-  "postinstall": "cd static/ckeditor && npm install"
+{
+  "scripts": {
+    "postinstall": "cd static/ckeditor && npm install"
+  }
 }
