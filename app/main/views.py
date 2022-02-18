@@ -286,7 +286,7 @@ def edit(id):
     form.title.data = post.title
     form.body.data = post.body
     form.tags.data = post.tags
-    if job := current_app.apscheduler.get_job(id):
+    if job := current_app.apscheduler.get_job(str(id)):
         date = str(job.trigger.run_date)
     return render_template('edit_post.html', form=form, post=post, date=date)
 
