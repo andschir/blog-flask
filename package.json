@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "postinstall": "cd app/static/ckeditor && npm install"
+    "postinstall": "cd app/static/ckeditor && rm -rf node_modules && npm install"
   }
 }
