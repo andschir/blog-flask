@@ -19,10 +19,10 @@ def make_shell_context():
 @app.before_request
 def check_for_admin():
     if request.path.startswith('/admin/'):
-        if not current_user.is_administrator:
+        if not current_user.is_administrator():
             abort(403)
     if request.path.startswith('/scheduler/'):
-        if not current_user.is_administrator:
+        if not current_user.is_administrator():
             abort(403)
 
 

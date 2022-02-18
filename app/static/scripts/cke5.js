@@ -59,16 +59,12 @@ $(document).ready(function() {
             autosave: {
               waitingTime: 3000,
               save( editor ) {
-                if (document.querySelector('#editor-autosave-status').hidden == false) {
-                  // TODO: move operations to function
-                  inputFields = $(".form").serializeArray();
-                  inputFields.splice(0, 1); // delete CSRF token
-                  inputFields.pop(); // delete datetime field
-                  inputFields[0].value = editorTitle.getData(); // replace Title and Body with cke data
-                  inputFields[1].value = editorBody.getData();
-                  if (editorTitle.getData() && editorBody.getData()) {
+                if (document.querySelector('#editor-autosave-status').hidden == false && countCharacters(editor.model.document) > 0) {
+                    inputFields = $(".form").serializeArray();
+                    inputFields.splice(0, 1); // delete CSRF token
+                    inputFields[0].value = editorTitle.getData(); // replace Title and Body with cke data
+                    inputFields[1].value = editorBody.getData();
                     return saveData( inputFields );
-                  }
                 }
               }
             },
@@ -162,7 +158,6 @@ $(document).ready(function() {
                 data: json,
                 success: function ( response ) {
                     resolve();
-                    console.info('autosave: ' + response.result); // TODO: change return to 200
                 }
             } );
         } );
@@ -244,11 +239,6 @@ $(document).ready(function() {
         createDraft();
       });
     }
-
-    document.querySelector('#btn_postpone').addEventListener('click', (event) => {
-//      event.preventDefault();
-
-    });
 
     // Validating: no empty fields
     $(".form").submit(function(e) {

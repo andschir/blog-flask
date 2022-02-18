@@ -191,7 +191,8 @@ def add_admin_views(app_instance):
             'body': 'Текст',
             'comments': 'Комментарии',
             'tags': 'Теги',
-            'author': 'Автор'
+            'author': 'Автор',
+            'publish_date': 'Дата отложенной публикации',
         }
         column_formatters = {
             'id': _id_formatter,
@@ -199,7 +200,7 @@ def add_admin_views(app_instance):
             'body': _html_formatter
         }
         form_columns = [
-            'comments', 'tags', 'status', 'timestamp', 'timestamp_modified', 'author'
+            'comments', 'tags', 'status', 'timestamp', 'timestamp_modified', 'publish_date', 'author'
         ]
         form_overrides = {'status': SelectField}
         form_args = {
@@ -213,6 +214,9 @@ def add_admin_views(app_instance):
                 'disabled': True
             },
             'timestamp_modified': {
+                'disabled': True
+            },
+            'publish_date': {
                 'disabled': True
             }
         }

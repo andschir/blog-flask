@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, abort, flash, request,\
-    current_app, make_response, jsonify
+    current_app, make_response, jsonify, send_from_directory
 from flask_login import login_required, current_user
 from . import main
 from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
@@ -8,13 +8,10 @@ from .. import db, scheduler
 from ..models import Permission, Role, User, Post, Comment, Tag
 from ..decorators import admin_required, permission_required
 
-import os
-from flask import send_from_directory
-from flask_ckeditor import upload_success, upload_fail
-
-from werkzeug.exceptions import RequestEntityTooLarge
-import uuid
+from os import path, listdir
 from PIL import Image, ImageDraw, ImageFont
+import uuid
+from werkzeug.exceptions import RequestEntityTooLarge
 
 import datetime
 from apscheduler.triggers.date import DateTrigger
@@ -133,6 +130,13 @@ def postpone_cancel(post_id):
         current_app.apscheduler.remove_job(next(check_job(post_id)).id)
 
 
+@main.route('/postpone_cancel', methods=['GET', 'POST'])
+@login_required
+def postpone_cancel_route():
+    postpone_cancel(request.json['id'])
+    return {'result': 'success'}
+
+
 @main.route('/postpone_remove/<int:id>', methods=['POST'])
 @login_required
 def postpone_remove(id):
@@ -142,6 +146,7 @@ def postpone_remove(id):
         abort(403)
     if request.method == 'POST':
         post.status = Post.STATUS_DRAFT
+        post.publish_date = None
         db.session.add(post)
         db.session.commit()
         postpone_cancel(id)
@@ -166,8 +171,8 @@ def create():
         submit_value = request.form.get('btn_submit')
         if 'postpone' in submit_value:
             status = Post.STATUS_POSTPONED
-            date_value = request.form.get("dateTimePicker")
-            publish_date = datetime.datetime.strptime(date_value, '%d.%m.%Y, %H:%M')
+            if date_value := request.form.get("dateTimePicker"):
+                publish_date = datetime.datetime.strptime(date_value, '%d.%m.%Y, %H:%M')
             message = 'отложена'
         else:
             status = Post.STATUS_PUBLIC
@@ -178,12 +183,15 @@ def create():
                 order_by(Post.id.desc()).first()
             post.status = status
             post.tags = form.tags.data
+            if 'postpone' in submit_value:
+                post.publish_date = publish_date
         else:
             post = Post(title=form.title.data,
                         body=form.body.data,
                         author=current_user._get_current_object(),
                         status=status,
-                        tags=form.tags.data)
+                        tags=form.tags.data,
+                        publish_date=publish_date if 'postpone' in submit_value else None)
 
         db.session.add(post)
         db.session.commit()
@@ -203,7 +211,7 @@ def create():
 def create_draft():
     if current_user.can(Permission.WRITE):
         post = Post(author=current_user._get_current_object(),
-                    status=1)
+                    status=Post.STATUS_DRAFT)
         db.session.add(post)
         db.session.commit()
         return {'draft_id': post.id}
@@ -214,7 +222,7 @@ def create_draft():
 @login_required
 def autosave():
     data = request.json['input_fields']
-    if len(data) > 3 and current_user.can(Permission.WRITE):
+    if current_user.can(Permission.WRITE):
         post_id = data[-1]
         post = Post.query.get_or_404(post_id)
         if current_user != post.author:
@@ -227,7 +235,7 @@ def autosave():
         db.session.add(post)
         db.session.commit()
         return {'result': 'draft updated'}
-    return {'result': data}
+    return {'result': 'draft not updated'}
 
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -243,11 +251,15 @@ def edit(id):
         submit_value = request.form.get('btn_submit')
         if date_value := request.form.get("dateTimePicker"):
             publish_date = datetime.datetime.strptime(date_value, '%d.%m.%Y, %H:%M')
+
         if submit_value == 'save':
             status = post.status
+            if status == Post.STATUS_POSTPONED:
+                post.publish_date = publish_date
             message = 'отредактирована'
         elif submit_value == 'postpone':
             status = Post.STATUS_POSTPONED
+            post.publish_date = publish_date
             message = 'отложена'
         post.title = form.title.data
         post.body = form.body.data
@@ -636,15 +648,17 @@ def upload():
     try:
         f = request.files.get('upload')
     except RequestEntityTooLarge:
-        return upload_fail(message='Размер файла слишком большой!')
+        return jsonify(uploaded=0,
+                       error={'message': f'Загрузка не удалась: размер файла слишком большой! '
+                                         f'\n(максимум {current_app.config["MAX_CONTENT_LENGTH"]/1024/1024} Мб)'})
 
     extension = f.filename.split('.')[-1].lower()
     # make unique filename
     f.filename = f.filename.split('.')[0] + '_' + uuid.uuid4().hex[:8] + '.' + f.filename.split('.')[-1]
 
-    filepath = os.path.join(app.config['UPLOADED_PATH_IMAGES']) + f.filename
-    fontpath = os.path.abspath(os.path.join(app.config['STATIC_DIR']) + '/fonts')
-    fontpath = fontpath + '/' + os.listdir(fontpath)[0]
+    filepath = path.join(app.config['UPLOADED_PATH_IMAGES']) + f.filename
+    fontpath = path.abspath(path.join(app.config['STATIC_DIR']) + '/fonts')
+    fontpath = fontpath + '/' + listdir(fontpath)[0]
 
     add_copyright(f, filepath, fontpath, extension)
 

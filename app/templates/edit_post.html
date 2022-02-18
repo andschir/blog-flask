@@ -21,14 +21,13 @@
   <form action="{{ url_for('.edit', id=post.id) }}" class="form form-group form-horizontal" method="POST">
     {{ form.csrf_token }}
     <div class="row mx-auto mt-3">
-      <h3>{{ form.title.label(class='control-label') }}</h3>
+      <h3>{{ form.title.label(class='control-label') }}</h3> <div id="title_empty"></div>
       <div class="">
         {{ form.title }}
       </div>
-      <div id="title_empty"></div>
     </div>
     <div class="row mx-auto mt-3">
-      <h3>{{ form.body.label(class='control-label') }}</h3>
+      <h3>{{ form.body.label(class='control-label') }}</h3> <div id="body_empty"></div>
       <div class="">
         {{ form.body }}
       </div>
@@ -41,7 +40,6 @@
                  </div>
             </div>
        </div>
-      <div id="body_empty"></div>
     </div>
     <div class="row mx-auto mt-3">
         <p>{{ form.tags.label(class='control-label') }} {{ form.tags(class='w-100') }}</p>
@@ -72,7 +70,7 @@
           </ul>
           {% endif %}
         {% endif %}
-        <button type="submit" class="btn btn-secondary" name="btn_submit" value="save">Сохранить</button>
+        <button type="submit" id="btn_save" class="btn btn-secondary" name="btn_submit" value="save">Сохранить</button>
       </div>
     </div>
   </form>

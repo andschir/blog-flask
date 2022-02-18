@@ -44,7 +44,7 @@
               {% elif post.status == post.STATUS_DRAFT %}
                 [Черновик]
               {% elif post.status == post.STATUS_POSTPONED %}
-                [Отложено]
+                [Отложено на {{ post.publish_date.strftime('%d %B %Y') }}]
               {% elif post.status == post.STATUS_HIDDEN %}
                 [Скрыто]
               {% endif %}
