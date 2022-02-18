@@ -1,4 +1,6 @@
 import os
+import subprocess
+
 import click
 from flask_migrate import Migrate, upgrade
 from app import create_app, db
@@ -46,3 +48,12 @@ def deploy():
 
     # create or update user roles
     Role.insert_roles()
+
+
+@app.cli.command()
+def update_cke():
+    """Update CKEditor with npm."""
+    bash_command = 'rm -rf node_modules && npm install'
+    process = subprocess.Popen(bash_command, cwd=app.config['STATIC_DIR'] + '/ckeditor', shell=True)
+    process.communicate()
+
