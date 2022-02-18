@@ -45,5 +45,5 @@ venv
 .env
 
 # Uploads folder
-uploads/img/*
-!uploads
+#uploads/img/*
+#!uploads
