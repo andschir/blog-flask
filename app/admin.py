@@ -96,7 +96,9 @@ def add_admin_views(app_instance):
             'username': 'Никнейм',
             'role.name': 'Роль',
             'member_since': 'Дата регистрации',
-            'last_seen': 'Последний раз заходил'
+            'last_seen': 'Последний раз заходил',
+            'followers': 'Подписчики',
+            'followed': 'Подписки',
         }
         column_filters = (
             'email', 'username', 'role.name', 'member_since'
@@ -113,8 +115,9 @@ def add_admin_views(app_instance):
             'new_password': PasswordField('Новый пароль'),
         }
         form_edit_rules = [
-            'posts', 'comments', 'email', 'username', 'new_password',
-            'name', 'confirmed', 'role', 'location', 'about_me',
+            'posts', 'comments', 'followers', 'followed',
+            'email', 'username', 'name', 'location', 'about_me',
+            'confirmed', 'role', 'new_password',
             'member_since', 'last_seen', 'avatar_hash',
         ]
 

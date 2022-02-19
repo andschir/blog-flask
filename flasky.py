@@ -56,4 +56,3 @@ def update_cke():
     bash_command = 'rm -rf node_modules && npm install'
     process = subprocess.Popen(bash_command, cwd=app.config['STATIC_DIR'] + '/ckeditor', shell=True)
     process.communicate()
-

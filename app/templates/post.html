@@ -10,7 +10,7 @@
 {% include '_posts.html' %}
 {% if posts[0].status == posts[0].STATUS_PUBLIC %}
 <div class="d-flex justify-content-between">
-  <div class="d-flex ms-4 mt-3 col-4">
+  <div class="d-flex ms-4 mt-3">
     <h4 id="comments">
       {% if posts[0].comments.count() == 0 %}
       Комментариев нет
@@ -43,7 +43,7 @@
   {% endif %}
   {% include '_comments.html' %}
   {% if pagination %}
-  <div class="pagination">
+  <div class="d-flex justify-content-center pagination mt-3">
     {{ macros.pagination_widget(pagination, '.post', fragment='#comments', id=posts[0].id) }}
   </div>
   {% endif %}
